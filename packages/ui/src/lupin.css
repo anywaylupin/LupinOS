@@ -1,0 +1,1263 @@
+/* @lupinos/ui. Wrap your app in .lui (LupinRoot does it) and pick a theme and mode:
+   <div class="lui" data-lui-theme="peli" data-lui-mode="light">…</div>
+   Every component reads only the --lui-* tokens below, so it works in every theme and mode. */
+
+/* ---- base -------------------------------------------------------------- */
+
+.lui {
+  --lui-font-theme: "Inter";
+  --lui-font: var(--lui-font-face, var(--lui-font-theme)), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "PingFang TC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans TC", system-ui, sans-serif;
+  /* knobs an app can set inline on the root: glass opacity, blur, shadow strength, text scale */
+  --lui-glass: 0.86;
+  --lui-blur: 40px;
+  --lui-shadow-k: 1;
+  --lui-text-scale: 1;
+  --lui-font-mono: "SF Mono", ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  --lui-r-window: 14px;
+  --lui-r-menu: 9px;
+  --lui-r-item: 5px;
+  --lui-r-control: 7px;
+  --lui-r-dock: 19px;
+  --lui-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lui-spring: cubic-bezier(0.25, 1.3, 0.5, 1);
+  position: relative;
+  color: var(--lui-ink);
+  font: 13px / 1.4 var(--lui-font);
+  transition: color 0.45s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.lui *,
+.lui *::before,
+.lui *::after {
+  box-sizing: border-box;
+}
+.lui ::selection {
+  background: color-mix(in srgb, var(--lui-accent) 35%, transparent);
+}
+.lui :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--lui-accent) 75%, transparent);
+  outline-offset: 1px;
+}
+.lui button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Scrollbars: thin, rounded, and only visible while you are over the thing that scrolls. */
+.lui ::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+.lui ::-webkit-scrollbar-track,
+.lui ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.lui ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 99px;
+  background: transparent;
+  background-clip: content-box;
+}
+.lui :hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--lui-ink) 26%, transparent);
+}
+.lui ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--lui-ink) 42%, transparent);
+}
+@supports not selector(::-webkit-scrollbar) {
+  .lui * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--lui-ink) 28%, transparent) transparent;
+  }
+}
+
+/* ---- materials shared by every theme ----------------------------------------------- */
+
+.lui[data-lui-mode="light"] {
+  --lui-ink: #1d1d1f;
+  --lui-muted: #78787d;
+  --lui-faint: #b0b0b4;
+  --lui-hover: rgb(0 0 0 / 0.055);
+  --lui-sep: rgb(0 0 0 / 0.1);
+  --lui-seg-on: #ffffff;
+  --lui-light-off: rgb(0 0 0 / 0.13);
+  --lui-bar: rgb(255 255 255 / 0.3);
+  --lui-bar-ink: #1d1d1f;
+  --lui-cap: rgb(255 255 255 / 0.42);
+  --lui-dock: rgb(255 255 255 / 0.26);
+  --lui-dock-edge: inset 0 0 0 0.5px rgb(255 255 255 / 0.38), 0 0 0 0.5px rgb(0 0 0 / 0.14);
+  --lui-dock-sep: rgb(0 0 0 / 0.16);
+  --lui-dot: rgb(0 0 0 / 0.55);
+  --lui-window-inner: inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 0 0 0.5px rgb(255 255 255 / 0.3);
+  --lui-rim: inset 0 1px 0 rgb(255 255 255 / 0.6), inset 0 0 0 0.5px rgb(255 255 255 / 0.35);
+  --lui-shadow-window: 0 0 0 0.5px rgb(0 0 0 / calc(0.23 * var(--lui-shadow-k))), 0 1px 1.5px rgb(0 0 0 / calc(0.08 * var(--lui-shadow-k))), 0 6px 14px rgb(0 0 0 / calc(0.1 * var(--lui-shadow-k))), 0 24px 56px rgb(0 0 0 / calc(0.22 * var(--lui-shadow-k)));
+  --lui-shadow-window-back: 0 0 0 0.5px rgb(0 0 0 / calc(0.18 * var(--lui-shadow-k))), 0 4px 10px rgb(0 0 0 / calc(0.06 * var(--lui-shadow-k))), 0 14px 30px rgb(0 0 0 / calc(0.12 * var(--lui-shadow-k)));
+  --lui-shadow-menu: 0 0 0 0.5px rgb(0 0 0 / calc(0.2 * var(--lui-shadow-k))), inset 0 0.5px 0 rgb(255 255 255 / 0.55), 0 8px 26px rgb(0 0 0 / calc(0.18 * var(--lui-shadow-k)));
+  --lui-shadow-pop: 0 0 0 0.5px rgb(0 0 0 / calc(0.2 * var(--lui-shadow-k))), inset 0 0.5px 0 rgb(255 255 255 / 0.55), 0 22px 60px rgb(0 0 0 / calc(0.28 * var(--lui-shadow-k)));
+  color-scheme: light;
+}
+.lui[data-lui-mode="dark"] {
+  --lui-ink: #ececee;
+  --lui-muted: #9b9ba1;
+  --lui-faint: #5f5f65;
+  --lui-hover: rgb(255 255 255 / 0.07);
+  --lui-sep: rgb(255 255 255 / 0.09);
+  --lui-seg-on: rgb(255 255 255 / 0.16);
+  --lui-light-off: rgb(255 255 255 / 0.16);
+  --lui-bar: rgb(20 20 22 / 0.32);
+  --lui-bar-ink: #f2f2f4;
+  --lui-cap: rgb(255 255 255 / 0.12);
+  --lui-dock: rgb(40 40 44 / 0.32);
+  --lui-dock-edge: inset 0 0 0 0.5px rgb(255 255 255 / 0.16), 0 0 0 0.5px rgb(0 0 0 / 0.45);
+  --lui-dock-sep: rgb(255 255 255 / 0.16);
+  --lui-dot: rgb(255 255 255 / 0.6);
+  --lui-window-inner: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  --lui-rim: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
+  --lui-shadow-window: 0 0 0 0.5px rgb(0 0 0 / calc(0.85 * var(--lui-shadow-k))), 0 2px 4px rgb(0 0 0 / calc(0.2 * var(--lui-shadow-k))), 0 10px 22px rgb(0 0 0 / calc(0.25 * var(--lui-shadow-k))), 0 30px 70px rgb(0 0 0 / calc(0.45 * var(--lui-shadow-k)));
+  --lui-shadow-window-back: 0 0 0 0.5px rgb(0 0 0 / calc(0.8 * var(--lui-shadow-k))), 0 14px 34px rgb(0 0 0 / calc(0.3 * var(--lui-shadow-k)));
+  --lui-shadow-menu: 0 0 0 0.5px rgb(0 0 0 / calc(0.7 * var(--lui-shadow-k))), inset 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 10px 30px rgb(0 0 0 / calc(0.35 * var(--lui-shadow-k)));
+  --lui-shadow-pop: 0 0 0 0.5px rgb(0 0 0 / calc(0.7 * var(--lui-shadow-k))), inset 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 24px 70px rgb(0 0 0 / calc(0.5 * var(--lui-shadow-k)));
+  color-scheme: dark;
+}
+
+/* ---- seven themes: wallpaper, tinted surfaces, one accent, four icon tones ------------- */
+
+.lui[data-lui-theme="kova"] {
+  --lui-font-theme: "Space Grotesk";
+  --lui-wall: radial-gradient(70% 80% at 88% 10%, #e8956f 0%, transparent 60%), radial-gradient(80% 90% at 8% 95%, #3a1f3d 0%, transparent 65%), linear-gradient(155deg, #c4605a 0%, #9a3a48 42%, #4e2441 78%, #2a1b2e 100%);
+}
+.lui[data-lui-theme="kova"][data-lui-mode="light"] {
+  --lui-content: #faf1ef; --lui-sidebar: rgb(248 232 229 / 0.6); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(252 244 242 / 0.78);
+  --lui-accent: #c24a3c; --lui-on-accent: #fff; --lui-i1: #d65a48; --lui-i2: #8e3a4a; --lui-i3: #fbecea; --lui-i4: #2b1c20;
+}
+.lui[data-lui-theme="kova"][data-lui-mode="dark"] {
+  --lui-content: #261f23; --lui-sidebar: rgb(56 36 44 / 0.6); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(46 34 40 / 0.74);
+  --lui-accent: #e4745f; --lui-on-accent: #fff; --lui-i1: #e4745f; --lui-i2: #8e3a4a; --lui-i3: #f4e2df; --lui-i4: #24181f;
+}
+
+.lui[data-lui-theme="tazu"] {
+  --lui-font-theme: "Lexend";
+  --lui-wall: radial-gradient(70% 80% at 15% 12%, #f8c99a 0%, transparent 60%), radial-gradient(70% 80% at 92% 85%, #b9667f 0%, transparent 62%), linear-gradient(150deg, #eaa070 0%, #d27c55 45%, #a8594f 100%);
+}
+.lui[data-lui-theme="tazu"][data-lui-mode="light"] {
+  --lui-content: #f8efe7; --lui-sidebar: rgb(247 232 220 / 0.58); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(250 242 235 / 0.76);
+  --lui-accent: #cc6634; --lui-on-accent: #fff; --lui-i1: #d8743f; --lui-i2: #9a4f58; --lui-i3: #fbf0e6; --lui-i4: #33231d;
+}
+.lui[data-lui-theme="tazu"][data-lui-mode="dark"] {
+  --lui-content: #2a221e; --lui-sidebar: rgb(60 44 36 / 0.6); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(50 40 34 / 0.74);
+  --lui-accent: #e8935c; --lui-on-accent: #2a1405; --lui-i1: #e8935c; --lui-i2: #9a4f58; --lui-i3: #f5e6da; --lui-i4: #211915;
+}
+
+.lui[data-lui-theme="mimo"] {
+  --lui-font-theme: "M PLUS Rounded 1c";
+  --lui-wall: radial-gradient(65% 75% at 20% 18%, #fdeeb6 0%, transparent 60%), radial-gradient(60% 70% at 95% 95%, #b8c08e 0%, transparent 62%), radial-gradient(55% 60% at 85% 10%, #f4c88c 0%, transparent 60%), linear-gradient(155deg, #f1d68a 0%, #e2b65e 55%, #c49a52 100%);
+}
+.lui[data-lui-theme="mimo"][data-lui-mode="light"] {
+  --lui-content: #f9f4e3; --lui-sidebar: rgb(247 239 212 / 0.58); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(250 246 232 / 0.78);
+  --lui-accent: #b5861b; --lui-on-accent: #fff; --lui-i1: #dca52a; --lui-i2: #7d6a34; --lui-i3: #fbf5e2; --lui-i4: #2c2716;
+}
+.lui[data-lui-theme="mimo"][data-lui-mode="dark"] {
+  --lui-content: #26231a; --lui-sidebar: rgb(56 50 32 / 0.6); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(46 42 30 / 0.74);
+  --lui-accent: #e2b84a; --lui-on-accent: #2a2006; --lui-i1: #e2b84a; --lui-i2: #8a7a44; --lui-i3: #f6efd8; --lui-i4: #1e1b12;
+}
+
+.lui[data-lui-theme="olvi"] {
+  --lui-font-theme: "Outfit";
+  --lui-wall: radial-gradient(70% 80% at 12% 15%, #d4dcb2 0%, transparent 60%), radial-gradient(60% 70% at 95% 8%, #a7b7bb 0%, transparent 60%), radial-gradient(70% 80% at 85% 95%, #56704f 0%, transparent 65%), linear-gradient(155deg, #a9b885 0%, #7f9767 50%, #5f7652 100%);
+}
+.lui[data-lui-theme="olvi"][data-lui-mode="light"] {
+  --lui-content: #f1f3ea; --lui-sidebar: rgb(230 234 216 / 0.58); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(245 247 238 / 0.78);
+  --lui-accent: #5a7d47; --lui-on-accent: #fff; --lui-i1: #6a8f4f; --lui-i2: #4c5f6a; --lui-i3: #f3f5ec; --lui-i4: #1f261c;
+}
+.lui[data-lui-theme="olvi"][data-lui-mode="dark"] {
+  --lui-content: #1f241d; --lui-sidebar: rgb(40 50 38 / 0.6); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(36 42 34 / 0.74);
+  --lui-accent: #94bb7a; --lui-on-accent: #0f1a0a; --lui-i1: #94bb7a; --lui-i2: #5c707a; --lui-i3: #e8eedf; --lui-i4: #151a13;
+}
+
+.lui[data-lui-theme="lisen"] {
+  --lui-font-theme: "Sora";
+  --lui-wall: radial-gradient(70% 80% at 12% 10%, #b4cfee 0%, transparent 58%), radial-gradient(70% 80% at 95% 95%, #3a2f63 0%, transparent 65%), linear-gradient(155deg, #7f9fd0 0%, #4b67a3 45%, #263463 80%, #1a2142 100%);
+}
+.lui[data-lui-theme="lisen"][data-lui-mode="light"] {
+  --lui-content: #eef2f9; --lui-sidebar: rgb(226 232 246 / 0.6); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(244 247 252 / 0.78);
+  --lui-accent: #4466b4; --lui-on-accent: #fff; --lui-i1: #5b7ccc; --lui-i2: #4a4f96; --lui-i3: #f1f4fb; --lui-i4: #1a2038;
+}
+.lui[data-lui-theme="lisen"][data-lui-mode="dark"] {
+  --lui-content: #1f2337; --lui-sidebar: rgb(38 46 78 / 0.58); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(34 40 62 / 0.74);
+  --lui-accent: #8fb1f2; --lui-on-accent: #0b1430; --lui-i1: #8fb1f2; --lui-i2: #4a4f96; --lui-i3: #e6ecf8; --lui-i4: #141830;
+}
+
+.lui[data-lui-theme="yune"] {
+  --lui-font-theme: "Chakra Petch";
+  --lui-wall: radial-gradient(65% 75% at 85% 12%, #c5a5ea 0%, transparent 58%), radial-gradient(65% 75% at 10% 92%, #e08bb8 0%, transparent 60%), linear-gradient(155deg, #6a4ea6 0%, #47367e 48%, #2a2150 100%);
+}
+.lui[data-lui-theme="yune"][data-lui-mode="light"] {
+  --lui-content: #f3eff8; --lui-sidebar: rgb(234 226 244 / 0.6); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(246 242 250 / 0.78);
+  --lui-accent: #7a5cb4; --lui-on-accent: #fff; --lui-i1: #8a6cc4; --lui-i2: #a34f86; --lui-i3: #f6f2fb; --lui-i4: #241c36;
+}
+.lui[data-lui-theme="yune"][data-lui-mode="dark"] {
+  --lui-content: #231f33; --lui-sidebar: rgb(46 38 74 / 0.58); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(40 34 60 / 0.74);
+  --lui-accent: #b79cf2; --lui-on-accent: #160d2e; --lui-i1: #b79cf2; --lui-i2: #a34f86; --lui-i3: #eee8f8; --lui-i4: #1a1530;
+}
+
+.lui[data-lui-theme="peli"] {
+  --lui-font-theme: "Zen Maru Gothic";
+  --lui-wall: radial-gradient(70% 80% at 15% 15%, #ffdcd6 0%, transparent 60%), radial-gradient(60% 70% at 95% 10%, #cdb0e0 0%, transparent 60%), radial-gradient(70% 80% at 85% 95%, #d9708f 0%, transparent 65%), linear-gradient(155deg, #f6c0bf 0%, #ec9fb2 50%, #cf7f9e 100%);
+}
+.lui[data-lui-theme="peli"][data-lui-mode="light"] {
+  --lui-content: #f9eff1; --lui-sidebar: rgb(248 230 234 / 0.58); --lui-side-sel: rgb(0 0 0 / 0.07); --lui-menu: rgb(251 243 245 / 0.78);
+  --lui-accent: #cc4f7a; --lui-on-accent: #fff; --lui-i1: #de6a8f; --lui-i2: #8a5a96; --lui-i3: #fcf0f2; --lui-i4: #33202a;
+}
+.lui[data-lui-theme="peli"][data-lui-mode="dark"] {
+  --lui-content: #2a1f25; --lui-sidebar: rgb(62 40 52 / 0.6); --lui-side-sel: rgb(255 255 255 / 0.1); --lui-menu: rgb(50 36 44 / 0.74);
+  --lui-accent: #ef8fae; --lui-on-accent: #2a0a17; --lui-i1: #ef8fae; --lui-i2: #8a5a96; --lui-i3: #f6e4ea; --lui-i4: #20161b;
+}
+
+/* ---- wallpaper ----------------------------------------------------------------------- */
+
+.lui-wallpaper {
+  position: absolute;
+  inset: 0;
+  background: var(--lui-wall);
+  overflow: hidden;
+}
+.lui-wallpaper > img,
+.lui-wallpaper > video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lui-wallpaper[data-entering] {
+  animation: lui-fade 0.6s var(--lui-ease) both;
+}
+/* A light theme in dark mode dims its wallpaper; a dark theme in light mode brightens it. */
+.lui-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background 0.4s;
+}
+.lui:is([data-lui-theme="tazu"], [data-lui-theme="mimo"], [data-lui-theme="olvi"], [data-lui-theme="peli"])[data-lui-mode="dark"] .lui-wallpaper::after {
+  background: rgb(10 8 14 / 0.4);
+}
+.lui:is([data-lui-theme="kova"], [data-lui-theme="lisen"], [data-lui-theme="yune"])[data-lui-mode="light"] .lui-wallpaper::after {
+  background: rgb(255 255 255 / 0.2);
+}
+
+/* ---- menu bar -------------------------------------------------------------------------- */
+
+.lui-menubar {
+  transition: background-color 0.45s, color 0.45s;
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 5000;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 8px;
+  background: var(--lui-bar);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  color: var(--lui-bar-ink);
+  font-size: 13px;
+  user-select: none;
+}
+.lui-menubar-item {
+  height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: var(--lui-r-item);
+  background: transparent;
+  color: inherit;
+  white-space: nowrap;
+  cursor: default;
+  transition: background 0.12s;
+}
+.lui-menubar-item[aria-expanded="true"],
+.lui-menubar-item:active {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+.lui-menubar-item svg {
+  width: 15px;
+  height: 15px;
+}
+.lui-menubar-app {
+  font-weight: 700;
+}
+.lui-menubar-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.lui-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+  padding: 0 10px;
+  margin-left: 4px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--lui-cap);
+  color: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: default;
+  transition: background 0.15s;
+}
+.lui-capsule:hover {
+  background: color-mix(in srgb, var(--lui-cap) 70%, currentColor 10%);
+}
+.lui-capsule svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- menus and context menus -------------------------------------------------------------- */
+
+.lui-menu {
+  position: fixed;
+  z-index: 9000;
+  min-width: 210px;
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 5px;
+  border-radius: var(--lui-r-menu);
+  background: var(--lui-menu);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-menu);
+  color: var(--lui-ink);
+  font-size: 13px;
+  user-select: none;
+  transform-origin: var(--lui-origin, top left);
+  animation: lui-pop 0.16s var(--lui-ease) both;
+}
+.lui-menu[data-closing] {
+  animation: lui-pop-out 0.12s ease-in both;
+  pointer-events: none;
+}
+.lui-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 22px;
+  padding: 0 10px 0 22px;
+  border: 0;
+  border-radius: var(--lui-r-item);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: default;
+}
+.lui-menu-item > .lui-menu-check {
+  position: absolute;
+  left: 7px;
+  font-size: 11px;
+}
+.lui-menu-item > kbd,
+.lui-menu-item > .lui-menu-chevron {
+  margin-left: auto;
+  padding-left: 18px;
+  font: inherit;
+  color: var(--lui-muted);
+}
+.lui-menu-item:focus,
+.lui-menu-item[data-active] {
+  outline: none;
+  background: var(--lui-accent);
+  color: var(--lui-on-accent);
+}
+.lui-menu-item:focus > kbd,
+.lui-menu-item[data-active] > kbd,
+.lui-menu-item:focus > .lui-menu-chevron,
+.lui-menu-item[data-active] > .lui-menu-chevron {
+  color: inherit;
+  opacity: 0.85;
+}
+.lui-menu-item:disabled {
+  color: var(--lui-faint);
+  background: transparent;
+}
+.lui-menu-sep {
+  height: 1px;
+  margin: 5px 10px;
+  background: var(--lui-sep);
+}
+
+/* ---- windows -------------------------------------------------------------------------------- */
+
+.lui-window {
+  position: absolute;
+  display: flex;
+  min-width: 0;
+  border-radius: var(--lui-r-window);
+  background: transparent;
+  color: var(--lui-ink);
+  box-shadow: var(--lui-shadow-window-back);
+  overflow: clip;
+  transition:
+    box-shadow 0.35s,
+    border-radius 0.35s,
+    left 0.36s var(--lui-spring),
+    top 0.36s var(--lui-spring),
+    width 0.36s var(--lui-spring),
+    height 0.36s var(--lui-spring);
+}
+.lui-window[data-focused] {
+  box-shadow: var(--lui-shadow-window);
+}
+.lui-window[data-moving] {
+  transition: box-shadow 0.25s;
+}
+.lui-window[data-minimized] {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* the thin inner edge dark windows have, drawn above the content */
+.lui-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  box-shadow: var(--lui-window-inner);
+  pointer-events: none;
+}
+.lui-window-sidebar {
+  position: relative;
+  flex: none;
+  width: var(--lui-sidebar-w, 200px);
+  padding-top: 52px;
+  overflow: auto;
+  background: var(--lui-sidebar);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  border-right: 0.5px solid var(--lui-sep);
+}
+.lui-window-sidebar > .lui-lights {
+  position: absolute;
+  top: 19px;
+  left: 18px;
+}
+.lui-window-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* liquid glass: a soft sheen from the top edge over the tinted, blurred backdrop */
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0) 160px),
+    color-mix(in srgb, var(--lui-content) calc(var(--lui-glass) * 100%), transparent);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  transition: background-color 0.45s;
+}
+/* text scale zooms window content as a whole, so pixel sizes inside apps scale with it */
+.lui-window-body,
+.lui-window-sidebar > :not(.lui-lights),
+.lui-drawer > * {
+  zoom: var(--lui-text-scale);
+  transition: zoom 0.3s var(--lui-ease);
+}
+.lui-window-toolbar {
+  flex: none;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 14px;
+  user-select: none;
+}
+.lui-window[data-chrome="unified"] .lui-window-toolbar {
+  height: 52px;
+}
+.lui-window-title {
+  font-weight: 650;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lui-window[data-chrome="title"] .lui-window-title {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  text-align: center;
+  pointer-events: none;
+  font-weight: 600;
+  color: var(--lui-muted);
+}
+.lui-window[data-chrome="title"][data-focused] .lui-window-title {
+  color: var(--lui-ink);
+}
+.lui-window[data-chrome="unified"] .lui-window-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.lui-window-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lui-window-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  user-select: text;
+}
+.lui-grip {
+  position: absolute;
+  z-index: 5;
+  touch-action: none;
+}
+.lui-grip[data-edge="n"],
+.lui-grip[data-edge="s"] {
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+.lui-grip[data-edge="e"],
+.lui-grip[data-edge="w"] {
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+.lui-grip[data-edge="n"] { top: -3px; }
+.lui-grip[data-edge="s"] { bottom: -3px; }
+.lui-grip[data-edge="e"] { right: -3px; }
+.lui-grip[data-edge="w"] { left: -3px; }
+.lui-grip[data-edge="ne"],
+.lui-grip[data-edge="nw"],
+.lui-grip[data-edge="se"],
+.lui-grip[data-edge="sw"] {
+  width: 16px;
+  height: 16px;
+}
+.lui-grip[data-edge="ne"] { top: -3px; right: -3px; cursor: nesw-resize; }
+.lui-grip[data-edge="sw"] { bottom: -3px; left: -3px; cursor: nesw-resize; }
+.lui-grip[data-edge="nw"] { top: -3px; left: -3px; cursor: nwse-resize; }
+.lui-grip[data-edge="se"] { bottom: -3px; right: -3px; cursor: nwse-resize; }
+
+/* traffic lights: coloured on the focused window, grey elsewhere, symbols on hover */
+.lui-lights {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+.lui-light {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--lui-light-off);
+  box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.16);
+  cursor: default;
+  transition: background 0.15s;
+}
+.lui-light > svg {
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+  color: rgb(0 0 0 / 0.6);
+  transition: opacity 0.12s;
+}
+.lui-window[data-focused] .lui-light[data-kind="close"],
+.lui-lights:hover .lui-light[data-kind="close"] { background: #ff5f57; }
+.lui-window[data-focused] .lui-light[data-kind="minimize"],
+.lui-lights:hover .lui-light[data-kind="minimize"] { background: #febc2e; }
+.lui-window[data-focused] .lui-light[data-kind="zoom"],
+.lui-lights:hover .lui-light[data-kind="zoom"] { background: #28c840; }
+.lui-lights:hover .lui-light > svg,
+.lui-light:focus-visible > svg {
+  opacity: 1;
+}
+.lui-light:active {
+  filter: brightness(0.85);
+}
+
+.lui-snap {
+  position: absolute;
+  z-index: 3000;
+  pointer-events: none;
+  border-radius: var(--lui-r-window);
+  background: color-mix(in srgb, var(--lui-accent) 16%, rgb(255 255 255 / 0.12));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lui-accent) 55%, transparent);
+  backdrop-filter: blur(8px);
+  animation: lui-fade 0.12s ease-out both;
+  transition: left 0.18s var(--lui-ease), top 0.18s var(--lui-ease), width 0.18s var(--lui-ease), height 0.18s var(--lui-ease);
+}
+
+/* ---- sidebar, toolbar and controls for app content ---------------------------------------------- */
+
+.lui-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 10px 12px;
+}
+.lui-sidebar-section {
+  padding: 12px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lui-muted);
+}
+.lui-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: default;
+  transition: background 0.12s;
+}
+.lui-sidebar-item:hover {
+  background: var(--lui-hover);
+}
+.lui-sidebar-item[aria-current="true"],
+.lui-sidebar-item[aria-current="page"] {
+  background: var(--lui-side-sel);
+}
+.lui-sidebar-item > svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--lui-accent);
+}
+.lui-sidebar-item > .lui-badge {
+  margin-left: auto;
+}
+
+.lui-button {
+  height: 24px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--lui-seg-on);
+  color: var(--lui-ink);
+  box-shadow: 0 0 0 0.5px var(--lui-sep), 0 0.5px 1px rgb(0 0 0 / 0.12);
+  white-space: nowrap;
+  cursor: default;
+  transition: background 0.12s, transform 0.08s, filter 0.12s;
+}
+.lui-button:hover {
+  filter: brightness(0.98);
+}
+.lui-button:active {
+  transform: scale(0.97);
+}
+.lui-button:disabled {
+  opacity: 0.45;
+  transform: none;
+}
+.lui-button[data-variant="primary"] {
+  background: var(--lui-accent);
+  color: var(--lui-on-accent);
+  box-shadow: 0 0.5px 1px rgb(0 0 0 / 0.2);
+}
+.lui-button[data-variant="primary"]:hover {
+  filter: brightness(1.06);
+}
+.lui-button[data-variant="plain"] {
+  background: transparent;
+  box-shadow: none;
+}
+.lui-button[data-variant="plain"]:hover {
+  background: var(--lui-hover);
+  filter: none;
+}
+.lui-button[data-icon] {
+  width: 28px;
+  padding: 0;
+}
+.lui-button svg {
+  width: 15px;
+  height: 15px;
+}
+.lui-segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 1px;
+  border-radius: var(--lui-r-control);
+  background: var(--lui-hover);
+}
+.lui-segmented > button {
+  min-width: 30px;
+  height: 22px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--lui-muted);
+  cursor: default;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.lui-segmented > button[aria-pressed="true"] {
+  background: var(--lui-seg-on);
+  color: var(--lui-ink);
+  box-shadow: 0 0.5px 1.5px rgb(0 0 0 / 0.18);
+}
+.lui-segmented svg {
+  width: 15px;
+  height: 15px;
+}
+.lui-field {
+  height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--lui-r-control);
+  background: var(--lui-hover);
+  color: inherit;
+  font: inherit;
+  box-shadow: inset 0 0 0 0.5px var(--lui-sep);
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+.lui-field:focus {
+  box-shadow: inset 0 0 0 0.5px var(--lui-accent), 0 0 0 3px color-mix(in srgb, var(--lui-accent) 30%, transparent);
+}
+textarea.lui-field {
+  height: auto;
+  padding: 8px 9px;
+}
+.lui-switch {
+  appearance: none;
+  position: relative;
+  width: 32px;
+  height: 19px;
+  margin: 0;
+  border-radius: 99px;
+  background: var(--lui-light-off);
+  cursor: default;
+  transition: background 0.2s;
+}
+.lui-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition: transform 0.22s var(--lui-spring);
+}
+.lui-switch:checked {
+  background: var(--lui-accent);
+}
+.lui-switch:checked::after {
+  transform: translateX(13px);
+}
+.lui-badge {
+  min-width: 18px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--lui-hover);
+  color: var(--lui-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* ---- dock ---------------------------------------------------------------------------------- */
+
+.lui-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 4000;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--lui-r-dock);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04)), var(--lui-dock);
+  backdrop-filter: blur(var(--lui-blur)) saturate(200%) brightness(1.06);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(200%) brightness(1.06);
+  box-shadow: var(--lui-rim), var(--lui-dock-edge), 0 10px 30px rgb(0 0 0 / calc(0.12 * var(--lui-shadow-k)));
+  user-select: none;
+  transition: background-color 0.45s, box-shadow 0.45s;
+}
+.lui-dock-item {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  transform-origin: bottom center;
+  transition: transform 0.32s var(--lui-spring), width 0.3s var(--lui-ease), height 0.3s var(--lui-ease);
+  touch-action: none;
+}
+.lui-dock[data-tracking] .lui-dock-item {
+  transition: transform 0.1s ease-out, width 0.3s var(--lui-ease), height 0.3s var(--lui-ease);
+}
+.lui-dock-item[data-dragging] {
+  z-index: 3;
+  transition: none;
+  filter: drop-shadow(0 8px 14px rgb(0 0 0 / 0.25));
+}
+.lui-dock-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: bottom center;
+}
+.lui-dock-icon > svg,
+.lui-dock-icon > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 1.5px 2px rgb(0 0 0 / 0.25));
+}
+.lui-dock-item[data-bounce] .lui-dock-icon {
+  animation: lui-bounce 0.8s var(--lui-ease) 2;
+}
+.lui-dock-item:active .lui-dock-icon {
+  filter: brightness(0.82);
+}
+.lui-dock-item[data-running]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--lui-dot);
+  animation: lui-fade 0.3s both;
+}
+.lui-dock-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--lui-menu);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  box-shadow: var(--lui-shadow-menu);
+  color: var(--lui-ink);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.14s, transform 0.14s var(--lui-ease);
+}
+.lui-dock-item:hover > .lui-dock-label,
+.lui-dock-item:focus-visible > .lui-dock-label {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.lui-dock-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 5px;
+  background: var(--lui-dock-sep);
+}
+
+/* ---- command palette ---------------------------------------------------------------------------- */
+
+.lui-palette-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 18vh;
+  animation: lui-fade 0.15s both;
+}
+.lui-palette {
+  width: min(640px, calc(100vw - 32px));
+  max-height: 62vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: var(--lui-menu);
+  backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-pop);
+  color: var(--lui-ink);
+  overflow: hidden;
+  transform-origin: top center;
+  animation: lui-pop 0.2s var(--lui-ease) both;
+}
+.lui-palette-head {
+  position: relative;
+  flex: none;
+}
+.lui-palette-head > svg {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  color: var(--lui-muted);
+}
+.lui-palette-input {
+  width: 100%;
+  height: 54px;
+  padding: 0 18px 0 50px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 300 21px/1 var(--lui-font);
+  outline: none;
+}
+.lui-palette-list {
+  overflow: auto;
+  padding: 6px;
+  border-top: 0.5px solid var(--lui-sep);
+  margin: 0;
+  list-style: none;
+}
+.lui-palette-list:empty {
+  display: none;
+}
+.lui-palette-section {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lui-muted);
+}
+.lui-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: default;
+}
+.lui-palette-item > svg,
+.lui-palette-item > .lui-palette-icon {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.lui-palette-item > small {
+  margin-left: auto;
+  color: var(--lui-muted);
+  font-size: 12px;
+}
+.lui-palette-item[aria-selected="true"] {
+  background: var(--lui-accent);
+  color: var(--lui-on-accent);
+}
+.lui-palette-item[aria-selected="true"] > small {
+  color: inherit;
+  opacity: 0.8;
+}
+.lui-palette-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--lui-muted);
+  border-top: 0.5px solid var(--lui-sep);
+}
+
+/* ---- notifications ------------------------------------------------------------------------------ */
+
+.lui-toasts {
+  position: fixed;
+  top: 34px;
+  right: 10px;
+  z-index: 9500;
+  display: grid;
+  gap: 8px;
+  width: min(344px, calc(100vw - 20px));
+  pointer-events: none;
+}
+.lui-toast {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 11px 14px;
+  border-radius: 16px;
+  background: var(--lui-menu);
+  backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(180%);
+  box-shadow: var(--lui-shadow-menu);
+  color: var(--lui-ink);
+  pointer-events: auto;
+  cursor: default;
+  animation: lui-toast-in 0.42s var(--lui-spring) both;
+}
+.lui-toast[data-leaving] {
+  animation: lui-toast-out 0.22s ease-in both;
+}
+.lui-toast > svg,
+.lui-toast > .lui-toast-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+.lui-toast strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+}
+.lui-toast p {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  color: var(--lui-muted);
+}
+
+
+/* ---- drawer ---------------------------------------------------------------------------------- */
+
+.lui-drawer-catch {
+  position: fixed;
+  inset: 0;
+  z-index: 8600;
+}
+.lui-drawer {
+  position: fixed;
+  z-index: 8700;
+  top: 34px;
+  bottom: 10px;
+  right: 10px;
+  max-width: calc(100vw - 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  overflow: auto;
+  border-radius: calc(var(--lui-r-window) + 6px);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.02)), var(--lui-menu);
+  backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-pop);
+  color: var(--lui-ink);
+  animation: lui-drawer-in 0.42s var(--lui-ease) both;
+}
+.lui-drawer[data-side="left"] {
+  right: auto;
+  left: 10px;
+  animation-name: lui-drawer-in-left;
+}
+.lui-drawer[data-leaving] {
+  animation: lui-drawer-out 0.32s cubic-bezier(0.55, 0, 0.75, 0.35) both;
+}
+.lui-drawer[data-side="left"][data-leaving] {
+  animation-name: lui-drawer-out-left;
+}
+@keyframes lui-drawer-in { from { opacity: 0; transform: translateX(calc(100% + 20px)); } }
+@keyframes lui-drawer-in-left { from { opacity: 0; transform: translateX(calc(-100% - 20px)); } }
+@keyframes lui-drawer-out { to { opacity: 0; transform: translateX(calc(100% + 20px)); } }
+@keyframes lui-drawer-out-left { to { opacity: 0; transform: translateX(calc(-100% - 20px)); } }
+
+/* ---- calendar -------------------------------------------------------------------------------- */
+
+.lui-calendar header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.lui-calendar header strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+.lui-calendar header > div {
+  display: flex;
+  gap: 2px;
+}
+.lui-calendar header .lui-button {
+  height: 26px;
+}
+.lui-calendar-week,
+.lui-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+.lui-calendar-week span {
+  padding: 4px 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lui-muted);
+}
+.lui-calendar-grid {
+  gap: 2px;
+  animation: lui-fade 0.3s var(--lui-ease) both;
+}
+.lui-calendar-grid[data-dir="1"] { animation-name: lui-cal-next; }
+.lui-calendar-grid[data-dir="-1"] { animation-name: lui-cal-prev; }
+@keyframes lui-cal-next { from { opacity: 0; transform: translateX(16px); } }
+@keyframes lui-cal-prev { from { opacity: 0; transform: translateX(-16px); } }
+.lui-calendar-day {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  min-height: 38px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: default;
+  transition: background 0.15s, color 0.15s;
+}
+.lui-calendar-day:hover {
+  background: var(--lui-hover);
+}
+.lui-calendar-day > span {
+  font-size: 13px;
+  font-weight: 500;
+}
+.lui-calendar-day > small {
+  font-size: 9.5px;
+  color: var(--lui-muted);
+}
+.lui-calendar-day > small[data-new] {
+  color: var(--lui-accent);
+  font-weight: 600;
+}
+.lui-calendar-day[data-outside] {
+  opacity: 0.38;
+}
+.lui-calendar-day[aria-selected="true"] {
+  background: var(--lui-hover);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lui-accent) 60%, transparent);
+}
+.lui-calendar-day[data-today] {
+  background: var(--lui-accent);
+  color: var(--lui-on-accent);
+}
+.lui-calendar-day[data-today] > small {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* ---- interface icons: animated on hover of whatever holds them ------------------------------------ */
+
+.lui-ui-icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  overflow: visible;
+}
+.lui-ui-icon * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+:where(button, a, [role="menuitem"], .lui-hover):hover > .lui-ui-icon[data-name="bell"] { animation: lui-ring 0.7s ease-in-out; transform-origin: 50% 10%; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="search"] { animation: lui-tilt 0.5s var(--lui-spring); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="settings"] { animation: lui-turn 0.7s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="sun"] { animation: lui-turn 0.8s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="moon"] { animation: lui-rock 0.6s ease-in-out; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="user"] { animation: lui-bob 0.5s var(--lui-spring); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="home"] .roof { animation: lui-hop 0.45s var(--lui-spring); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="trash"] .lid { animation: lui-lid 0.6s var(--lui-spring); transform-origin: 85% 100%; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="folder"] .flap { animation: lui-flap 0.5s var(--lui-spring); transform-origin: 50% 100%; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="wifi"] .a1 { animation: lui-blink 0.9s 0s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="wifi"] .a2 { animation: lui-blink 0.9s 0.12s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="wifi"] .a3 { animation: lui-blink 0.9s 0.24s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="volume"] .w1 { animation: lui-blink 0.8s 0s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="volume"] .w2 { animation: lui-blink 0.8s 0.14s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="battery"] .fill { animation: lui-charge 0.9s var(--lui-ease); transform-origin: 0 50%; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="grid"] .c { animation: lui-pop-cell 0.45s var(--lui-spring) both; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="grid"] .c:nth-child(2) { animation-delay: 0.05s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="grid"] .c:nth-child(3) { animation-delay: 0.1s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="grid"] .c:nth-child(4) { animation-delay: 0.15s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="list"] .l { animation: lui-slide 0.4s var(--lui-ease) both; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="list"] .l:nth-child(2) { animation-delay: 0.06s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="list"] .l:nth-child(3) { animation-delay: 0.12s; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="chevron-left"] { animation: lui-nudge-left 0.4s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="chevron-right"] { animation: lui-nudge-right 0.4s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="plus"] { animation: lui-quarter 0.4s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="mail"] .flap { animation: lui-flap 0.5s var(--lui-spring); transform-origin: 50% 0; }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="lock"] .shackle { animation: lui-hop 0.45s var(--lui-spring); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="power"] { animation: lui-pulse 0.6s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="download"] .arrow { animation: lui-drop 0.6s var(--lui-ease); }
+:where(button, a, .lui-hover):hover > .lui-ui-icon[data-name="sparkle"] { animation: lui-twinkle 0.7s var(--lui-ease); }
+
+/* ---- motion ---------------------------------------------------------------------------------------- */
+
+@keyframes lui-fade { from { opacity: 0; } }
+@keyframes lui-pop { from { opacity: 0; transform: scale(0.96); } }
+@keyframes lui-pop-out { to { opacity: 0; transform: scale(0.98); } }
+@keyframes lui-toast-in { from { opacity: 0; transform: translateX(28px) scale(0.98); } }
+@keyframes lui-toast-out { to { opacity: 0; transform: translateX(28px); } }
+@keyframes lui-bounce { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-24px); } 55% { transform: translateY(0); } 72% { transform: translateY(-8px); } 86% { transform: translateY(0); } }
+@keyframes lui-ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(14deg); } 30% { transform: rotate(-12deg); } 45% { transform: rotate(9deg); } 60% { transform: rotate(-6deg); } 75% { transform: rotate(3deg); } }
+@keyframes lui-tilt { 40% { transform: rotate(-14deg) scale(1.08); } }
+@keyframes lui-turn { to { transform: rotate(90deg); } }
+@keyframes lui-rock { 30% { transform: rotate(-18deg); } 65% { transform: rotate(10deg); } }
+@keyframes lui-bob { 40% { transform: translateY(-2px); } }
+@keyframes lui-hop { 40% { transform: translateY(-2px); } }
+@keyframes lui-lid { 40% { transform: translateY(-1.5px) rotate(-14deg); } }
+@keyframes lui-flap { 40% { transform: scaleY(0.6); } }
+@keyframes lui-blink { 0%, 100% { opacity: 1; } 40% { opacity: 0.2; } }
+@keyframes lui-charge { from { transform: scaleX(0.2); } }
+@keyframes lui-pop-cell { 40% { transform: scale(0.7); } }
+@keyframes lui-slide { 40% { transform: translateX(2px); } }
+@keyframes lui-nudge-left { 40% { transform: translateX(-2px); } }
+@keyframes lui-nudge-right { 40% { transform: translateX(2px); } }
+@keyframes lui-quarter { to { transform: rotate(90deg); } }
+@keyframes lui-pulse { 40% { transform: scale(0.85); } }
+@keyframes lui-drop { 40% { transform: translateY(2px); } }
+@keyframes lui-twinkle { 40% { transform: scale(1.2) rotate(15deg); } }
+
+/* Reduced motion: movement becomes a short fade; nothing bounces or spins. */
+@media (prefers-reduced-motion: reduce) {
+  .lui:not([data-lui-motion="full"]) *,
+  .lui:not([data-lui-motion="full"]) *::before,
+  .lui:not([data-lui-motion="full"]) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.lui[data-lui-motion="reduced"] *,
+.lui[data-lui-motion="reduced"] *::before,
+.lui[data-lui-motion="reduced"] *::after {
+  animation-name: lui-fade !important;
+  animation-iteration-count: 1 !important;
+  transition-property: opacity, background-color, color, box-shadow !important;
+}
+.lui[data-lui-motion="none"] *,
+.lui[data-lui-motion="none"] *::before,
+.lui[data-lui-motion="none"] *::after {
+  animation: none !important;
+  transition: none !important;
+}

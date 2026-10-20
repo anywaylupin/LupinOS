@@ -1,0 +1,133 @@
+// Words for the system chrome: menus, the dock, the drawer, Settings and the welcome screen.
+// The English text is the key, so a missing translation falls back to English.
+import { type Lang, useOS } from "./store";
+
+const zh: Record<string, [hans: string, hant: string]> = {
+  "About LupinOS": ["关于 LupinOS", "關於 LupinOS"],
+  "Settings…": ["设置…", "設定…"],
+  Settings: ["设置", "設定"],
+  "Show All Apps": ["显示所有应用", "顯示所有 App"],
+  "All Apps": ["所有应用", "所有 App"],
+  "Restart…": ["重新启动…", "重新啟動…"],
+  "Shut Down…": ["关机…", "關機…"],
+  "Lock Screen": ["锁定屏幕", "鎖定螢幕"],
+  "Switch User…": ["切换用户…", "切換使用者…"],
+  File: ["文件", "檔案"],
+  Edit: ["编辑", "編輯"],
+  View: ["显示", "顯示"],
+  Go: ["前往", "前往"],
+  Window: ["窗口", "視窗"],
+  Help: ["帮助", "說明"],
+  "New Window": ["新建窗口", "新增視窗"],
+  "New Folder": ["新建文件夹", "新增檔案夾"],
+  "New Text File": ["新建文本文件", "新增文字檔"],
+  "Close Window": ["关闭窗口", "關閉視窗"],
+  Undo: ["撤销", "還原"],
+  "Undo Life Choices": ["撤销人生选择", "還原人生選擇"],
+  "Light and Dark": ["浅色与深色", "淺色與深色"],
+  Theme: ["主题", "主題"],
+  "Show Desktop": ["显示桌面", "顯示桌面"],
+  Projects: ["项目", "專案"],
+  Home: ["个人", "個人"],
+  Files: ["文件管理", "檔案管理"],
+  Terminal: ["终端", "終端機"],
+  Resume: ["简历", "履歷"],
+  Contact: ["联系", "聯絡"],
+  Project: ["项目", "專案"],
+  Viewer: ["查看器", "檢視器"],
+  Desktop: ["桌面", "桌面"],
+  Minimise: ["最小化", "縮到最小"],
+  Zoom: ["缩放", "縮放"],
+  "Minimise Others": ["最小化其他窗口", "縮小其他視窗"],
+  Search: ["搜索", "搜尋"],
+  "Keyboard Shortcuts": ["键盘快捷键", "鍵盤快速鍵"],
+  "Plain Version": ["简洁版", "簡潔版"],
+  "Change Wallpaper…": ["更换墙纸…", "更改背景圖片…"],
+  "Sort By": ["排序方式", "排序方式"],
+  Name: ["名称", "名稱"],
+  Kind: ["种类", "種類"],
+  "Clean Up": ["整理", "整理"],
+  Open: ["打开", "打開"],
+  Rename: ["重命名", "重新命名"],
+  "Move to Trash": ["移到废纸篓", "丟到垃圾桶"],
+  Hide: ["隐藏", "隱藏"],
+  Trash: ["废纸篓", "垃圾桶"],
+  Quit: ["退出", "結束"],
+  Notifications: ["通知", "通知"],
+  Clear: ["清除", "清除"],
+  "No notifications": ["没有通知", "沒有通知"],
+  Today: ["今天", "今天"],
+  "Previous month": ["上个月", "上個月"],
+  "Next month": ["下个月", "下個月"],
+  "Quick Settings": ["快速设置", "快速設定"],
+  "Wi-Fi": ["无线局域网", "Wi-Fi"],
+  Sound: ["声音", "聲音"],
+  Appearance: ["外观", "外觀"],
+  Wallpaper: ["墙纸", "背景圖片"],
+  Text: ["文字", "文字"],
+  Windows: ["窗口", "視窗"],
+  "Dock and Desktop": ["程序坞与桌面", "Dock 與桌面"],
+  Motion: ["动画", "動畫"],
+  "Language and Region": ["语言与地区", "語言與地區"],
+  Accessibility: ["辅助功能", "輔助使用"],
+  About: ["关于", "關於"],
+  Mode: ["模式", "模式"],
+  Auto: ["自动", "自動"],
+  Light: ["浅色", "淺色"],
+  Dark: ["深色", "深色"],
+  "Icon size": ["图标大小", "圖像大小"],
+  Small: ["小", "小"],
+  Medium: ["中", "中"],
+  Large: ["大", "大"],
+  Font: ["字体", "字體"],
+  "Theme font": ["主题字体", "主題字體"],
+  "Text colour": ["文字颜色", "文字顏色"],
+  "Text size": ["文字大小", "文字大小"],
+  Transparency: ["透明度", "透明度"],
+  Blur: ["模糊", "模糊"],
+  Shadow: ["阴影", "陰影"],
+  "Corner radius": ["圆角", "圓角"],
+  "Dock size": ["程序坞大小", "Dock 大小"],
+  Magnification: ["放大", "放大"],
+  "Throw windows": ["甩动窗口", "甩動視窗"],
+  "Snap to edges": ["吸附到边缘", "貼齊邊緣"],
+  "Shake to minimise others": ["摇动以最小化其他窗口", "搖動以縮小其他視窗"],
+  Animation: ["动画", "動畫"],
+  Dragging: ["拖移", "拖移"],
+  Full: ["完整", "完整"],
+  Reduced: ["减弱", "減少"],
+  None: ["无", "無"],
+  Language: ["语言", "語言"],
+  "Lunar calendar": ["农历", "農曆"],
+  "Show lunar dates in the calendar": ["在日历中显示农历日期", "在日曆中顯示農曆日期"],
+  "24-hour time": ["24 小时制", "24 小時制"],
+  "Standard pointer": ["标准指针", "標準指標"],
+  "Restore Defaults": ["恢复默认", "回復預設值"],
+  Default: ["默认", "預設"],
+  "Choose a File…": ["选取文件…", "選擇檔案…"],
+  "Theme gradient": ["主题渐变", "主題漸層"],
+  "Reset This Profile…": ["重置此账户…", "重設此帳號…"],
+  Welcome: ["欢迎", "歡迎"],
+  "Âm lịch {day}/{month}": ["农历{month}月{day}日", "農曆{month}月{day}日"],
+  "Welcome back, {name}": ["欢迎回来，{name}", "歡迎回來，{name}"],
+  "The quick fox jumps over the lazy dog": ["敏捷的狐狸跳过了懒狗", "敏捷的狐狸跳過了懶狗"],
+};
+
+export function translate(lang: Lang, text: string, vars?: Record<string, string>) {
+  const row = lang === "en" ? undefined : zh[text];
+  let out = row ? row[lang === "zh-Hant" ? 1 : 0] : text;
+  for (const [k, v] of Object.entries(vars ?? {})) out = out.replace(`{${k}}`, v);
+  return out;
+}
+
+/** The signed-in user's language, or the last user's before anyone signs in. */
+export const useLang = (): Lang =>
+  useOS((s) => (s.sessions[s.current ?? s.lastUser ?? ""]?.settings.lang ?? "en"));
+
+export function useT() {
+  const lang = useLang();
+  return (text: string, vars?: Record<string, string>) => translate(lang, text, vars);
+}
+
+/** Locale for dates and times. English follows the browser so day and month order feel local. */
+export const localeOf = (lang: Lang) => (lang === "en" ? undefined : lang);

@@ -1,0 +1,17 @@
+{
+  "name": "lupinos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @lupinos/site dev",
+    "build": "pnpm --filter @lupinos/ui build && pnpm --filter @lupinos/site build",
+    "preview": "pnpm --filter @lupinos/site preview",
+    "test": "pnpm -r test",
+    "typecheck": "tsc -p packages/ui && tsc -p apps/site"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}

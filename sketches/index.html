@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LupinOS sketches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --page: #e9e7e2; --ink: #1d1d1f; --mute: #6e6e73; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 Inter, system-ui, sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 48px 20px 96px; }
+  header.page h1 { font-size: 32px; letter-spacing: -0.02em; margin: 0; }
+  header.page p { color: var(--mute); max-width: 680px; }
+  section.dir { margin-top: 72px; }
+  .dir-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .dir-head h2 { font-size: 24px; letter-spacing: -0.01em; margin: 0; }
+  .tag { font-size: 12px; padding: 2px 10px; border-radius: 99px; background: #fff; color: var(--mute); }
+  .dir-head p { flex-basis: 100%; color: var(--mute); margin: 6px 0 18px; max-width: 760px; }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+  .notes div { background: #fff; border-radius: 14px; padding: 14px 16px; font-size: 13px; color: #3a3a3c; }
+  .notes b { display: block; font-size: 12px; color: var(--mute); font-weight: 500; margin-bottom: 4px; }
+  .icons { display: flex; flex-wrap: wrap; gap: 18px 14px; margin-top: 16px; padding: 22px; border-radius: 18px; }
+  .icons figure { margin: 0; width: 72px; text-align: center; font-size: 11px; }
+  .icons figure .ic { width: 56px; height: 56px; margin: 0 auto 6px; }
+  .swatches { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .swatches span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--mute); }
+  .swatches i { width: 18px; height: 18px; border-radius: 6px; display: inline-block; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08); }
+
+  /* ---- screen frame shared by all three ---- */
+  .screen { position: relative; aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 60px -20px rgb(0 0 0 / .25); }
+  .screen * { box-sizing: border-box; }
+  .ic { display: grid; place-items: center; }
+  .ic svg { width: 58%; height: 58%; }
+
+  /* ================= A. Paper (macOS + Notion) ================= */
+  .A { background: #efeee9; font-family: Inter, system-ui, sans-serif; color: #1f1f1f; }
+  .A .menubar { position: absolute; inset: 0 0 auto; height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12.5px; background: rgb(255 255 255 / .6); backdrop-filter: blur(20px); }
+  .A .menubar b { font-weight: 700; }
+  .A .menubar .right { margin-left: auto; display: flex; gap: 14px; color: #555; }
+  .A .desk-icons { position: absolute; top: 50px; right: 22px; display: grid; gap: 16px; }
+  .A .desk-icons figure { margin: 0; width: 76px; text-align: center; font-size: 11.5px; }
+  .A .desk-icons .ic { width: 52px; height: 52px; margin: 0 auto 4px; }
+  .A .win { position: absolute; background: #fbfbfa; border-radius: 14px; box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 18px 40px -12px rgb(0 0 0 / .22); overflow: hidden; display: flex; flex-direction: column; }
+  .A .win.back { opacity: .97; box-shadow: 0 0 0 1px rgb(0 0 0 / .05), 0 8px 20px -10px rgb(0 0 0 / .15); }
+  .A .tb { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; flex: none; }
+  .A .lights { display: flex; gap: 7px; }
+  .A .lights i { width: 11px; height: 11px; border-radius: 50%; background: #d9d8d3; }
+  .A .win.front .lights i:nth-child(1) { background: #ff5f57; } .A .win.front .lights i:nth-child(2) { background: #febc2e; } .A .win.front .lights i:nth-child(3) { background: #28c840; }
+  .A .tb .title { margin: 0 auto; font-size: 12.5px; font-weight: 600; color: #444; transform: translateX(-26px); }
+  .A .files { display: grid; grid-template-columns: 170px 1fr; flex: 1; min-height: 0; }
+  .A .side { background: #f4f3f0; padding: 6px 10px; font-size: 12.5px; }
+  .A .side small { display: block; color: #8a8a8a; font-size: 11px; margin: 12px 8px 4px; }
+  .A .side a { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 8px; color: #333; text-decoration: none; }
+  .A .side a.on { background: #8bd48a; color: #10300f; font-weight: 600; }
+  .A .side a .dot { width: 14px; height: 14px; border-radius: 4px; background: #d9d8d3; }
+  .A .side a.on .dot { background: #10300f22; }
+  .A .main { padding: 14px 18px; overflow: hidden; }
+  .A .main h3 { margin: 0 0 2px; font-size: 20px; letter-spacing: -0.01em; }
+  .A .main .sub { color: #8a8a8a; font-size: 12px; margin-bottom: 12px; }
+  .A .chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .A .chips span { font-size: 11.5px; padding: 3px 10px; border-radius: 99px; background: #efeee9; color: #555; }
+  .A .chips span.on { background: #1f1f1f; color: #fff; }
+  .A .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .A .card { background: #fff; border-radius: 12px; box-shadow: 0 0 0 1px rgb(0 0 0 / .05); overflow: hidden; }
+  .A .card .img { aspect-ratio: 16/10; background: #d6d5d0; }
+  .A .card .body { padding: 8px 10px 10px; font-size: 12px; }
+  .A .card .body b { display: block; font-size: 12.5px; }
+  .A .card .body span { color: #8a8a8a; font-size: 11px; }
+  .A .card .stack { display: flex; gap: 4px; margin-top: 6px; }
+  .A .card .stack i { font-style: normal; font-size: 10px; padding: 1px 6px; border-radius: 99px; background: #e9f6e8; color: #2c6b2a; }
+  .A .note-body { padding: 4px 22px 18px; font-size: 12.5px; color: #333; }
+  .A .note-body h4 { font-size: 22px; margin: 6px 0 2px; letter-spacing: -0.01em; }
+  .A .note-body .prop { display: grid; grid-template-columns: 80px 1fr; font-size: 11.5px; color: #8a8a8a; gap: 4px; margin: 8px 0 10px; }
+  .A .note-body .prop b { color: #333; font-weight: 500; }
+  .A .dock { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-radius: 20px; background: rgb(255 255 255 / .55); backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgb(255 255 255 / .6) inset, 0 10px 30px -8px rgb(0 0 0 / .25); }
+  .A .dock .ic { width: 44px; height: 44px; position: relative; }
+  .A .dock .ic.run::after { content: ""; position: absolute; bottom: -6px; width: 4px; height: 4px; border-radius: 50%; background: #444; left: 50%; margin-left: -2px; }
+  .A .dock .sep { width: 1px; height: 32px; background: rgb(0 0 0 / .12); margin: 0 4px; }
+  /* A icons: squircle, soft pastel field, dark ink glyph */
+  .A .ic, .iconsA .ic { border-radius: 24%; color: #1f1f1f; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06), 0 1px 2px rgb(0 0 0 / .08); }
+
+  /* ================= B. Shelf (ChromeOS + Material You) ================= */
+  .B { background: radial-gradient(120% 90% at 20% 10%, #dfe9d8, #c9d8c4 45%, #b5c7b3); font-family: Inter, system-ui, sans-serif; color: #1a1c19; }
+  .B .win { position: absolute; background: #f6f8f2; border-radius: 22px; box-shadow: 0 6px 24px -6px rgb(30 50 30 / .28); overflow: hidden; display: flex; flex-direction: column; }
+  .B .tb { height: 44px; display: flex; align-items: center; padding: 0 10px 0 16px; gap: 10px; flex: none; }
+  .B .tb .title { font-size: 13px; font-weight: 600; }
+  .B .tb .ctl { margin-left: auto; display: flex; gap: 4px; }
+  .B .tb .ctl i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 14px; color: #42493f; }
+  .B .tb .ctl i:hover { background: #e2e8dc; }
+  .B .body { display: grid; grid-template-columns: 64px 1fr; flex: 1; min-height: 0; }
+  .B .rail { display: grid; align-content: start; justify-items: center; gap: 14px; padding-top: 8px; font-size: 10px; color: #42493f; }
+  .B .rail div { display: grid; justify-items: center; gap: 3px; }
+  .B .rail .pill { width: 48px; height: 28px; border-radius: 99px; display: grid; place-items: center; }
+  .B .rail .on .pill { background: #c6ecbd; color: #062105; }
+  .B .rail .pill svg { width: 18px; height: 18px; }
+  .B .content { padding: 4px 16px 16px; overflow: hidden; }
+  .B .content h3 { font-size: 22px; font-weight: 500; margin: 6px 0 12px; }
+  .B .seg { display: inline-flex; border: 1px solid #72796f; border-radius: 99px; overflow: hidden; margin-bottom: 14px; font-size: 11.5px; }
+  .B .seg span { padding: 4px 14px; } .B .seg span + span { border-left: 1px solid #72796f; }
+  .B .seg .on { background: #c6ecbd; }
+  .B .list { display: grid; gap: 8px; }
+  .B .row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #fff; border-radius: 16px; font-size: 12.5px; }
+  .B .row .thumb { width: 44px; height: 44px; border-radius: 12px; background: #d5dccf; flex: none; }
+  .B .row b { display: block; font-weight: 600; }
+  .B .row span { color: #72796f; font-size: 11.5px; }
+  .B .row .go { margin-left: auto; padding: 6px 14px; border-radius: 99px; background: #386a20; color: #fff; font-size: 11.5px; }
+  .B .fab { position: absolute; right: 16px; bottom: 16px; padding: 12px 18px; border-radius: 16px; background: #c6ecbd; font-size: 12.5px; font-weight: 600; box-shadow: 0 3px 8px rgb(0 0 0 / .15); }
+  .B .shelf { position: absolute; left: 12px; right: 12px; bottom: 10px; display: flex; align-items: center; }
+  .B .shelf .launcher { width: 40px; height: 40px; border-radius: 50%; background: rgb(255 255 255 / .55); backdrop-filter: blur(20px); display: grid; place-items: center; }
+  .B .shelf .launcher i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #1a1c19; }
+  .B .shelf .apps { margin: 0 auto; display: flex; gap: 8px; padding: 6px 10px; border-radius: 99px; background: rgb(255 255 255 / .5); backdrop-filter: blur(20px); }
+  .B .shelf .apps .ic { width: 38px; height: 38px; position: relative; }
+  .B .shelf .apps .ic.run::after { content: ""; position: absolute; bottom: -5px; left: 50%; width: 10px; margin-left: -5px; height: 3px; border-radius: 3px; background: #1a1c19; }
+  .B .shelf .status { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 99px; background: rgb(255 255 255 / .55); backdrop-filter: blur(20px); font-size: 12px; font-weight: 500; }
+  .B .widget { position: absolute; left: 22px; top: 22px; width: 190px; padding: 16px; border-radius: 24px; background: rgb(255 255 255 / .5); backdrop-filter: blur(20px); }
+  .B .widget .t { font-size: 34px; font-weight: 400; letter-spacing: -0.02em; line-height: 1; }
+  .B .widget span { font-size: 12px; color: #42493f; }
+  .B .qs { position: absolute; right: 14px; bottom: 62px; width: 230px; padding: 14px; border-radius: 24px; background: #eef2e8; box-shadow: 0 8px 30px -8px rgb(0 0 0 / .3); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px; }
+  .B .qs div { padding: 10px 12px; border-radius: 99px; background: #dfe5d9; }
+  .B .qs div.on { background: #386a20; color: #fff; }
+  .B .qs .slider { grid-column: 1 / -1; height: 30px; border-radius: 99px; background: linear-gradient(90deg, #c6ecbd 65%, #dfe5d9 65%); padding: 0; }
+  /* B icons: circles, tonal Material containers, glyph in on-container colour */
+  .B .ic, .iconsB .ic { border-radius: 50%; }
+
+  /* ================= C. Graphite (macOS dark, editorial) ================= */
+  .C { background: #141414; font-family: Inter, system-ui, sans-serif; color: #ececec; }
+  .C .wall { position: absolute; inset: 0; background: radial-gradient(60% 70% at 75% 30%, #2a2722 0%, transparent 70%), radial-gradient(50% 60% at 15% 85%, #24221f 0%, transparent 70%); }
+  .C .menubar { position: absolute; inset: 0 0 auto; height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12.5px; color: #cfcfcf; background: rgb(20 20 20 / .5); backdrop-filter: blur(20px); }
+  .C .menubar b { color: #fff; }
+  .C .menubar .right { margin-left: auto; display: flex; gap: 14px; }
+  .C .win { position: absolute; background: #1e1e1e; border-radius: 12px; box-shadow: 0 0 0 1px rgb(255 255 255 / .07), 0 24px 50px -10px rgb(0 0 0 / .6); overflow: hidden; display: flex; flex-direction: column; }
+  .C .tb { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #242424; flex: none; font-size: 12px; color: #a8a8a8; }
+  .C .lights { display: flex; gap: 7px; } .C .lights i { width: 11px; height: 11px; border-radius: 50%; background: #3a3a3a; }
+  .C .win.front .lights i:nth-child(1) { background: #ff5f57; } .C .win.front .lights i:nth-child(2) { background: #febc2e; } .C .win.front .lights i:nth-child(3) { background: #28c840; }
+  .C .tb .title { margin: 0 auto; transform: translateX(-26px); }
+  .C .term { padding: 12px 14px; font: 12px/1.6 "JetBrains Mono", ui-monospace, monospace; color: #c9c9c9; }
+  .C .term .p { color: #f2b544; } .C .term .g { color: #7fd17a; }
+  .C .doc { padding: 22px 28px; }
+  .C .doc .kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #f2b544; }
+  .C .doc h4 { font-size: 30px; letter-spacing: -0.02em; margin: 6px 0 8px; font-weight: 600; }
+  .C .doc p { color: #a8a8a8; font-size: 12.5px; margin: 0 0 10px; }
+  .C .doc .cover { aspect-ratio: 16/7; border-radius: 10px; background: #2c2c2c; margin: 12px 0; }
+  .C .dock { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 6px; padding: 7px 9px; border-radius: 22px; background: rgb(40 40 40 / .6); backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgb(255 255 255 / .08) inset, 0 10px 30px rgb(0 0 0 / .4); }
+  .C .dock .ic { width: 44px; height: 44px; position: relative; }
+  .C .dock .ic.run::after { content: ""; position: absolute; bottom: -6px; width: 4px; height: 4px; border-radius: 50%; background: #ddd; left: 50%; margin-left: -2px; }
+  .C .dock .sep { width: 1px; height: 32px; background: rgb(255 255 255 / .12); margin: 6px 4px; }
+  .C .spot { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); width: 46%; background: rgb(38 38 38 / .8); backdrop-filter: blur(30px); border-radius: 14px; box-shadow: 0 0 0 1px rgb(255 255 255 / .08), 0 30px 60px rgb(0 0 0 / .5); overflow: hidden; }
+  .C .spot .q { padding: 14px 16px; font-size: 16px; color: #fff; border-bottom: 1px solid rgb(255 255 255 / .08); }
+  .C .spot .q span { color: #777; }
+  .C .spot .r { display: flex; align-items: center; gap: 10px; padding: 7px 12px; font-size: 12.5px; }
+  .C .spot .r .ic { width: 26px; height: 26px; }
+  .C .spot .r small { margin-left: auto; color: #777; }
+  .C .spot .r.on { background: #f2b544; color: #1a1306; } .C .spot .r.on small { color: #1a130699; }
+  /* C icons: dark rounded tiles, one coloured glyph each */
+  .C .ic, .iconsC .ic { border-radius: 24%; background: linear-gradient(#2e2e2e, #232323); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); }
+
+  @media (max-width: 760px) { .screen { aspect-ratio: auto; height: 560px; } .A .desk-icons, .B .widget { display: none; } }
+</style>
+</head>
+<body>
+<!-- One glyph set, drawn once and reused by every direction. Each app gets its own symbol. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-files" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/></symbol>
+    <symbol id="g-projects" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="2"/><path d="M6.5 5h11M8.5 2.8h7"/></g></symbol>
+    <symbol id="g-about" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5"/></g></symbol>
+    <symbol id="g-resume" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 15.5h6M9 9h2"/></g></symbol>
+    <symbol id="g-contact" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></g></symbol>
+    <symbol id="g-terminal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 10l3 2.5L7 15M12.5 15.5H17"/></g></symbol>
+    <symbol id="g-settings" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></g></symbol>
+    <symbol id="g-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10.5 11v5.5M13.5 11v5.5"/></g></symbol>
+    <symbol id="g-music" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 17.5V5.5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></g></symbol>
+    <symbol id="g-gallery" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M3.5 17l5-4.5 4 3.5 3-2.5 5 4"/></g></symbol>
+    <symbol id="g-notes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5M8.5 8.5h7M8.5 12h5"/></g></symbol>
+    <symbol id="g-calc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M9 12h.01M12 12h.01M15 12h.01M9 15.5h.01M12 15.5h.01M15 15.5h.01"/></g></symbol>
+    <symbol id="g-games" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4 4 0 0 1 3.9 4.8l-.8 3.6a2 2 0 0 1-3.4.9L14.5 15h-5l-2.2 2.3a2 2 0 0 1-3.4-.9l-.8-3.6A4 4 0 0 1 7 8z"/><path d="M8 10.5v3M6.5 12h3M15.5 11.2h.01M17 12.8h.01"/></g></symbol>
+    <symbol id="g-browser" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5c-2.5-2.4-3.6-5.2-3.6-8.5S9.5 5.9 12 3.5z"/></g></symbol>
+    <symbol id="g-calendar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="page">
+    <h1>LupinOS · three directions</h1>
+    <p>Flat 2D, no hexagons, no 3D. Every app has its own icon. The dock floats 12px above the bottom edge in all three. Each direction keeps the same layout ideas, so pick a feel and the build carries over. Placeholder content throughout.</p>
+  </header>
+
+  <!-- ===================== A ===================== -->
+  <section class="dir">
+    <div class="dir-head">
+      <h2>A · Paper</h2><span class="tag">macOS + Notion</span>
+      <p>Warm off-white, quiet type, cards with hairline borders, one soft green accent, the closest to your reference. Windows read like Notion pages. Traffic-light controls only colour on the focused window.</p>
+    </div>
+    <div class="screen A">
+      <div class="menubar"><b>LupinOS</b><b>Files</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><div class="right"><span>Plain version</span><span>⌘K</span><span>Tue 20 Oct · 12:56</span></div></div>
+      <div class="desk-icons">
+        <figure><div class="ic" style="background:#dff2dc"><svg><use href="#g-projects"/></svg></div>Projects</figure>
+        <figure><div class="ic" style="background:#fbe9c9"><svg><use href="#g-about"/></svg></div>About</figure>
+        <figure><div class="ic" style="background:#e6e3fb"><svg><use href="#g-resume"/></svg></div>Resume.pdf</figure>
+        <figure><div class="ic" style="background:#dcebfb"><svg><use href="#g-contact"/></svg></div>Contact</figure>
+      </div>
+      <div class="win back" style="left:56%;top:12%;width:30%;height:58%">
+        <div class="tb"><div class="lights"><i></i><i></i><i></i></div><span class="title">About.txt</span></div>
+        <div class="note-body">
+          <div style="font-size:30px">👋</div>
+          <h4>Hi, I'm Lupin</h4>
+          <div class="prop"><span>Role</span><b>Frontend developer</b><span>Based in</span><b>City, Country</b><span>Status</span><b style="color:#2c6b2a">● Open to work</b></div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </div>
+      </div>
+      <div class="win front" style="left:5%;top:9%;width:56%;height:72%">
+        <div class="tb"><div class="lights"><i></i><i></i><i></i></div><span class="title">Projects</span></div>
+        <div class="files">
+          <nav class="side">
+            <small>Favourites</small>
+            <a class="on"><span class="dot"></span>Projects</a>
+            <a><span class="dot"></span>Desktop</a>
+            <a><span class="dot"></span>Home</a>
+            <small>Portfolio</small>
+            <a><span class="dot"></span>About.txt</a>
+            <a><span class="dot"></span>Resume.pdf</a>
+            <small>Locations</small>
+            <a><span class="dot"></span>Trash</a>
+          </nav>
+          <div class="main">
+            <h3>Projects</h3>
+            <div class="sub">4 projects · read-only</div>
+            <div class="chips"><span class="on">All</span><span>Web</span><span>Tools</span><span>Experiments</span></div>
+            <div class="cards">
+              <div class="card"><div class="img"></div><div class="body"><b>Project 01</b><span>Lorem ipsum dolor sit</span><div class="stack"><i>React</i><i>TS</i></div></div></div>
+              <div class="card"><div class="img"></div><div class="body"><b>Project 02</b><span>Lorem ipsum dolor sit</span><div class="stack"><i>Astro</i></div></div></div>
+              <div class="card"><div class="img"></div><div class="body"><b>Project 03</b><span>Lorem ipsum dolor sit</span><div class="stack"><i>Node</i></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="ic run" style="background:#dff2dc"><svg><use href="#g-files"/></svg></div>
+        <div class="ic run" style="background:#fbe9c9"><svg><use href="#g-about"/></svg></div>
+        <div class="ic" style="background:#e6e3fb"><svg><use href="#g-resume"/></svg></div>
+        <div class="ic" style="background:#dcebfb"><svg><use href="#g-contact"/></svg></div>
+        <div class="ic" style="background:#2b2b2b;color:#f4f4f4"><svg><use href="#g-terminal"/></svg></div>
+        <div class="ic" style="background:#fde1dc"><svg><use href="#g-music"/></svg></div>
+        <div class="ic" style="background:#ecebe6"><svg><use href="#g-settings"/></svg></div>
+        <span class="sep"></span>
+        <div class="ic" style="background:#ecebe6"><svg><use href="#g-trash"/></svg></div>
+      </div>
+    </div>
+    <div class="icons iconsA" style="background:#efeee9">
+      <figure><div class="ic" style="background:#dff2dc"><svg><use href="#g-files"/></svg></div>Files</figure>
+      <figure><div class="ic" style="background:#dff2dc"><svg><use href="#g-projects"/></svg></div>Projects</figure>
+      <figure><div class="ic" style="background:#fbe9c9"><svg><use href="#g-about"/></svg></div>About</figure>
+      <figure><div class="ic" style="background:#e6e3fb"><svg><use href="#g-resume"/></svg></div>Resume</figure>
+      <figure><div class="ic" style="background:#dcebfb"><svg><use href="#g-contact"/></svg></div>Contact</figure>
+      <figure><div class="ic" style="background:#2b2b2b;color:#f4f4f4"><svg><use href="#g-terminal"/></svg></div>Terminal</figure>
+      <figure><div class="ic" style="background:#fde1dc"><svg><use href="#g-music"/></svg></div>Music</figure>
+      <figure><div class="ic" style="background:#fbe9c9"><svg><use href="#g-gallery"/></svg></div>Gallery</figure>
+      <figure><div class="ic" style="background:#fff6c4"><svg><use href="#g-notes"/></svg></div>Notes</figure>
+      <figure><div class="ic" style="background:#ecebe6"><svg><use href="#g-calc"/></svg></div>Calculator</figure>
+      <figure><div class="ic" style="background:#e6e3fb"><svg><use href="#g-games"/></svg></div>Games</figure>
+      <figure><div class="ic" style="background:#dcebfb"><svg><use href="#g-browser"/></svg></div>Browser</figure>
+      <figure><div class="ic" style="background:#fde1dc"><svg><use href="#g-calendar"/></svg></div>Calendar</figure>
+      <figure><div class="ic" style="background:#ecebe6"><svg><use href="#g-settings"/></svg></div>Settings</figure>
+      <figure><div class="ic" style="background:#ecebe6"><svg><use href="#g-trash"/></svg></div>Trash</figure>
+    </div>
+    <div class="swatches"><span><i style="background:#efeee9"></i>Desk #EFEEE9</span><span><i style="background:#fbfbfa"></i>Window #FBFBFA</span><span><i style="background:#1f1f1f"></i>Ink #1F1F1F</span><span><i style="background:#8bd48a"></i>Accent #8BD48A</span><span><i style="background:#ff5f57"></i>Close</span></div>
+    <div class="notes">
+      <div><b>Shape</b>14px window radius, 24% squircle icons, 99px chips.</div>
+      <div><b>Type</b>Inter. 12.5 body, 20 to 22 page titles, tight tracking.</div>
+      <div><b>Depth</b>Hairline borders plus one soft shadow. Frosted menubar and dock.</div>
+      <div><b>Dark mode</b>Charcoal paper (#1C1C1B), same green, pastel icons drop to 20% tint.</div>
+    </div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="dir">
+    <div class="dir-head">
+      <h2>B · Shelf</h2><span class="tag">ChromeOS + Material You</span>
+      <p>Tonal green palette pulled from the wallpaper, big rounded windows, a navigation rail, pill buttons and a FAB. The shelf floats: launcher on the left, apps in a centred pill, a status pill on the right that opens quick settings.</p>
+    </div>
+    <div class="screen B">
+      <div class="widget"><div class="t">12:56</div><span>Tuesday, 20 October</span></div>
+      <div class="win" style="left:22%;top:8%;width:56%;height:74%">
+        <div class="tb"><span class="title">Projects</span><div class="ctl"><i>–</i><i>▢</i><i>✕</i></div></div>
+        <div class="body">
+          <div class="rail">
+            <div class="on"><span class="pill"><svg><use href="#g-projects"/></svg></span>Projects</div>
+            <div><span class="pill"><svg><use href="#g-about"/></svg></span>About</div>
+            <div><span class="pill"><svg><use href="#g-resume"/></svg></span>Resume</div>
+            <div><span class="pill"><svg><use href="#g-contact"/></svg></span>Contact</div>
+          </div>
+          <div class="content">
+            <h3>Projects</h3>
+            <div class="seg"><span class="on">✓ All</span><span>Web</span><span>Tools</span></div>
+            <div class="list">
+              <div class="row"><span class="thumb"></span><div><b>Project 01</b><span>React · TypeScript · 20XX</span></div><span class="go">Open</span></div>
+              <div class="row"><span class="thumb"></span><div><b>Project 02</b><span>Astro · CSS · 20XX</span></div><span class="go">Open</span></div>
+              <div class="row"><span class="thumb"></span><div><b>Project 03</b><span>Node · Postgres · 20XX</span></div><span class="go">Open</span></div>
+            </div>
+          </div>
+        </div>
+        <span class="fab">✉ Hire me</span>
+      </div>
+      <div class="qs"><div class="on">Wi-Fi</div><div>Do not disturb</div><div class="on">Dark theme</div><div>Night light</div><div class="slider"></div></div>
+      <div class="shelf">
+        <div class="launcher"><i></i></div>
+        <div class="apps">
+          <div class="ic run" style="background:#c6ecbd;color:#062105"><svg><use href="#g-files"/></svg></div>
+          <div class="ic" style="background:#ffdcbe;color:#2c1600"><svg><use href="#g-about"/></svg></div>
+          <div class="ic" style="background:#dce1ff;color:#00105c"><svg><use href="#g-resume"/></svg></div>
+          <div class="ic" style="background:#cde5ff;color:#001d32"><svg><use href="#g-contact"/></svg></div>
+          <div class="ic" style="background:#1a1c19;color:#c6ecbd"><svg><use href="#g-terminal"/></svg></div>
+          <div class="ic" style="background:#ffdad6;color:#410002"><svg><use href="#g-music"/></svg></div>
+          <div class="ic" style="background:#e0e4d9;color:#1a1c19"><svg><use href="#g-settings"/></svg></div>
+        </div>
+        <div class="status">⌁ ◐ 94% · 12:56</div>
+      </div>
+    </div>
+    <div class="icons iconsB" style="background:#dfe9d8">
+      <figure><div class="ic" style="background:#c6ecbd;color:#062105"><svg><use href="#g-files"/></svg></div>Files</figure>
+      <figure><div class="ic" style="background:#c6ecbd;color:#062105"><svg><use href="#g-projects"/></svg></div>Projects</figure>
+      <figure><div class="ic" style="background:#ffdcbe;color:#2c1600"><svg><use href="#g-about"/></svg></div>About</figure>
+      <figure><div class="ic" style="background:#dce1ff;color:#00105c"><svg><use href="#g-resume"/></svg></div>Resume</figure>
+      <figure><div class="ic" style="background:#cde5ff;color:#001d32"><svg><use href="#g-contact"/></svg></div>Contact</figure>
+      <figure><div class="ic" style="background:#1a1c19;color:#c6ecbd"><svg><use href="#g-terminal"/></svg></div>Terminal</figure>
+      <figure><div class="ic" style="background:#ffdad6;color:#410002"><svg><use href="#g-music"/></svg></div>Music</figure>
+      <figure><div class="ic" style="background:#ffdcbe;color:#2c1600"><svg><use href="#g-gallery"/></svg></div>Gallery</figure>
+      <figure><div class="ic" style="background:#f4e7a1;color:#221b00"><svg><use href="#g-notes"/></svg></div>Notes</figure>
+      <figure><div class="ic" style="background:#e0e4d9;color:#1a1c19"><svg><use href="#g-calc"/></svg></div>Calculator</figure>
+      <figure><div class="ic" style="background:#dce1ff;color:#00105c"><svg><use href="#g-games"/></svg></div>Games</figure>
+      <figure><div class="ic" style="background:#cde5ff;color:#001d32"><svg><use href="#g-browser"/></svg></div>Browser</figure>
+      <figure><div class="ic" style="background:#ffdad6;color:#410002"><svg><use href="#g-calendar"/></svg></div>Calendar</figure>
+      <figure><div class="ic" style="background:#e0e4d9;color:#1a1c19"><svg><use href="#g-settings"/></svg></div>Settings</figure>
+      <figure><div class="ic" style="background:#e0e4d9;color:#1a1c19"><svg><use href="#g-trash"/></svg></div>Trash</figure>
+    </div>
+    <div class="swatches"><span><i style="background:#f6f8f2"></i>Surface #F6F8F2</span><span><i style="background:#c6ecbd"></i>Primary container #C6ECBD</span><span><i style="background:#386a20"></i>Primary #386A20</span><span><i style="background:#1a1c19"></i>On surface #1A1C19</span></div>
+    <div class="notes">
+      <div><b>Shape</b>22px windows, 16px rows, circle icons, pills everywhere.</div>
+      <div><b>Colour</b>Material You tonal roles, re-seeded from each wallpaper.</div>
+      <div><b>Navigation</b>Rail inside apps, launcher plus status pill on the shelf.</div>
+      <div><b>Touch</b>Closest to the tablet and phone shells: same pills and rail.</div>
+    </div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="dir">
+    <div class="dir-head">
+      <h2>C · Graphite</h2><span class="tag">macOS dark, editorial</span>
+      <p>Dark, calm and a bit cinematic. Dark icon tiles with one coloured glyph each, a single honey accent for focus and selection, big editorial type in project pages. Spotlight-style search in the middle.</p>
+    </div>
+    <div class="screen C">
+      <div class="wall"></div>
+      <div class="menubar"><b>LupinOS</b><b>Project viewer</b><span>File</span><span>Edit</span><span>View</span><div class="right"><span>Plain version</span><span>⌘K</span><span>Tue 20 Oct · 12:56</span></div></div>
+      <div class="win back" style="left:4%;top:12%;width:38%;height:46%">
+        <div class="tb"><div class="lights"><i></i><i></i><i></i></div><span class="title">Terminal</span></div>
+        <div class="term"><span class="p">guest@lupinos ~ %</span> whoami<br>Lupin, Frontend developer<br><span class="p">guest@lupinos ~ %</span> ls Projects<br><span class="g">project-01  project-02  project-03</span><br><span class="p">guest@lupinos ~ %</span> █</div>
+      </div>
+      <div class="win front" style="left:36%;top:9%;width:52%;height:74%">
+        <div class="tb"><div class="lights"><i></i><i></i><i></i></div><span class="title">Project 01</span></div>
+        <div class="doc">
+          <div class="kicker">Case study · 20XX</div>
+          <h4>Project 01</h4>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+          <div class="cover"></div>
+          <p>React · TypeScript · Lorem ipsum dolor sit amet.</p>
+        </div>
+      </div>
+      <div class="spot">
+        <div class="q">proj<span>ects</span></div>
+        <div class="r on"><div class="ic" style="color:#f2b544"><svg><use href="#g-projects"/></svg></div>Projects<small>Folder</small></div>
+        <div class="r"><div class="ic" style="color:#7fd17a"><svg><use href="#g-files"/></svg></div>project-01<small>/Projects</small></div>
+        <div class="r"><div class="ic" style="color:#7fd17a"><svg><use href="#g-files"/></svg></div>project-02<small>/Projects</small></div>
+      </div>
+      <div class="dock">
+        <div class="ic run" style="color:#7fd17a"><svg><use href="#g-files"/></svg></div>
+        <div class="ic" style="color:#f2b544"><svg><use href="#g-about"/></svg></div>
+        <div class="ic" style="color:#a99cff"><svg><use href="#g-resume"/></svg></div>
+        <div class="ic" style="color:#6cb6ff"><svg><use href="#g-contact"/></svg></div>
+        <div class="ic run" style="color:#e8e8e8"><svg><use href="#g-terminal"/></svg></div>
+        <div class="ic" style="color:#ff7a6e"><svg><use href="#g-music"/></svg></div>
+        <div class="ic" style="color:#9a9a9a"><svg><use href="#g-settings"/></svg></div>
+        <span class="sep"></span>
+        <div class="ic" style="color:#9a9a9a"><svg><use href="#g-trash"/></svg></div>
+      </div>
+    </div>
+    <div class="icons iconsC" style="background:#1b1b1b;color:#bbb">
+      <figure><div class="ic" style="color:#7fd17a"><svg><use href="#g-files"/></svg></div>Files</figure>
+      <figure><div class="ic" style="color:#f2b544"><svg><use href="#g-projects"/></svg></div>Projects</figure>
+      <figure><div class="ic" style="color:#f2b544"><svg><use href="#g-about"/></svg></div>About</figure>
+      <figure><div class="ic" style="color:#a99cff"><svg><use href="#g-resume"/></svg></div>Resume</figure>
+      <figure><div class="ic" style="color:#6cb6ff"><svg><use href="#g-contact"/></svg></div>Contact</figure>
+      <figure><div class="ic" style="color:#e8e8e8"><svg><use href="#g-terminal"/></svg></div>Terminal</figure>
+      <figure><div class="ic" style="color:#ff7a6e"><svg><use href="#g-music"/></svg></div>Music</figure>
+      <figure><div class="ic" style="color:#f2b544"><svg><use href="#g-gallery"/></svg></div>Gallery</figure>
+      <figure><div class="ic" style="color:#f5d66b"><svg><use href="#g-notes"/></svg></div>Notes</figure>
+      <figure><div class="ic" style="color:#9a9a9a"><svg><use href="#g-calc"/></svg></div>Calculator</figure>
+      <figure><div class="ic" style="color:#a99cff"><svg><use href="#g-games"/></svg></div>Games</figure>
+      <figure><div class="ic" style="color:#6cb6ff"><svg><use href="#g-browser"/></svg></div>Browser</figure>
+      <figure><div class="ic" style="color:#ff7a6e"><svg><use href="#g-calendar"/></svg></div>Calendar</figure>
+      <figure><div class="ic" style="color:#9a9a9a"><svg><use href="#g-settings"/></svg></div>Settings</figure>
+      <figure><div class="ic" style="color:#9a9a9a"><svg><use href="#g-trash"/></svg></div>Trash</figure>
+    </div>
+    <div class="swatches"><span><i style="background:#141414"></i>Desk #141414</span><span><i style="background:#1e1e1e"></i>Window #1E1E1E</span><span><i style="background:#ececec"></i>Text #ECECEC</span><span><i style="background:#f2b544"></i>Accent #F2B544</span></div>
+    <div class="notes">
+      <div><b>Shape</b>12px windows, 24% squircle tiles, tight 6px dock gaps.</div>
+      <div><b>Type</b>Inter, with large editorial titles and uppercase kickers.</div>
+      <div><b>Accent</b>Honey for focus, selection and the prompt. Nothing else is loud.</div>
+      <div><b>Light mode</b>Bone white (#F5F4F0), tiles invert to white with the same glyph colours.</div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

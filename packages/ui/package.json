@@ -1,0 +1,31 @@
+{
+  "name": "@lupinos/ui",
+  "version": "0.1.0",
+  "description": "macOS-style desktop components for React: windows, dock, menu bar, menus, command palette, notifications, icons and seven themes.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": ["*.css"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/lupin.css"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p . && node -e \"require('fs').copyFileSync('src/lupin.css','dist/lupin.css')\"",
+    "test": "node --test src/geometry.test.ts"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+      "./styles.css": "./dist/lupin.css"
+    }
+  },
+  "keywords": ["react", "desktop", "window-manager", "dock", "macos", "ui", "components", "themes"]
+}

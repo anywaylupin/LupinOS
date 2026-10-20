@@ -1,0 +1,152 @@
+---
+// The plain version: every project, the bio, the resume and contact, as a normal readable page.
+// This is what search engines index.
+import { owner, projects } from "../content/owner";
+const { resume } = owner;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{owner.name}, {owner.role} · Portfolio</title>
+    <meta name="description" content={`${owner.name}, ${owner.role}. Projects, resume and contact.`} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --bg: #fbfaf6;
+        --text: #16181c;
+        --muted: #5b5f66;
+        --accent: #a86b00;
+        --line: #e4e0d6;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --text: #e9edf2;
+          --muted: #9aa4b1;
+          --accent: #ffc94a;
+          --line: #232b36;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 system-ui, sans-serif;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+      h1 {
+        font-size: 2.2rem;
+        margin: 0;
+      }
+      h2 {
+        margin-top: 48px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--accent);
+      }
+      a {
+        color: var(--accent);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .project {
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .cover {
+        aspect-ratio: 16 / 7;
+        background: #9a9ea5;
+        margin: 10px 0;
+      }
+      .chips span {
+        display: inline-block;
+        padding: 0 10px;
+        margin: 0 6px 6px 0;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        font-size: 14px;
+      }
+      nav a {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="/">&larr; Back to LupinOS</a></p>
+      <h1>{owner.name}</h1>
+      <p class="muted">{owner.role} · {owner.location}</p>
+      <nav aria-label="Sections">
+        <a href="#projects">Projects</a><a href="#about">About</a><a href="#resume">Resume</a><a href="#contact">Contact</a>
+      </nav>
+
+      <h2 id="projects">Projects</h2>
+      {
+        projects.map((p) => (
+          <article class="project" id={p.slug}>
+            <h3>
+              {p.title} <span class="muted">({p.year})</span>
+            </h3>
+            <div class="cover" role="img" aria-label={`${p.title} cover image placeholder`} />
+            <p>{p.summary}</p>
+            <div class="chips">
+              {p.stack.map((s) => (
+                <span>{s}</span>
+              ))}
+            </div>
+            <p>
+              {p.links.map((l) => (
+                <a href={l.href} style="margin-right:12px">
+                  {l.label}
+                </a>
+              ))}
+              <a href={`/app/files/projects/${p.slug}`}>Open in LupinOS</a>
+            </p>
+          </article>
+        ))
+      }
+
+      <h2 id="about">About</h2>
+      {owner.bio.map((p) => <p>{p}</p>)}
+
+      <h2 id="resume">Resume</h2>
+      <p><a href={resume.file} download>Download the resume (PDF)</a></p>
+      <h3>Experience</h3>
+      {
+        resume.experience.map((e) => (
+          <p>
+            <strong>{e.role}</strong>, {e.org} <span class="muted">· {e.when}</span>
+            <br />
+            {e.text}
+          </p>
+        ))
+      }
+      <h3>Education</h3>
+      {
+        resume.education.map((e) => (
+          <p>
+            <strong>{e.role}</strong>, {e.org} <span class="muted">· {e.when}</span>
+          </p>
+        ))
+      }
+      <h3>Skills</h3>
+      <div class="chips">{resume.skills.map((s) => <span>{s}</span>)}</div>
+
+      <h2 id="contact">Contact</h2>
+      <p>Email: <a href={`mailto:${owner.email}`}>{owner.email}</a></p>
+      <p>{owner.links.map((l) => <a href={l.href} style="margin-right:12px">{l.label}</a>)}</p>
+
+      <p class="muted" style="margin-top:48px;font-size:14px">
+        Privacy: this site sets no cookies. Profiles, files and wallpapers you make in LupinOS stay in your browser.
+      </p>
+    </main>
+  </body>
+</html>

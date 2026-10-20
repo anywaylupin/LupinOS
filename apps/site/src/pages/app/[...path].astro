@@ -1,0 +1,29 @@
+---
+// Deep links: one static page per app and per project, each with its own title and description.
+// The OS reads the path on load and opens that window straight away.
+import { owner, projects } from "../../content/owner";
+import Base from "../../layouts/Base.astro";
+import { apps } from "../../os/apps";
+import OS from "../../os/OS";
+
+export function getStaticPaths() {
+  const appRoutes = Object.values(apps)
+    .filter((a) => !a.hidden)
+    .map((a) => ({ params: { path: a.id }, props: { title: a.name, description: a.description } }));
+  const folders = ["projects", "desktop", "home"].map((f) => ({
+    params: { path: `files/${f}` },
+    props: { title: f[0].toUpperCase() + f.slice(1), description: `The ${f} folder.` },
+  }));
+  const projectRoutes = projects.map((p) => ({
+    params: { path: `files/projects/${p.slug}` },
+    props: { title: p.title, description: p.summary },
+  }));
+  return [...appRoutes, ...folders, ...projectRoutes];
+}
+
+const { title, description } = Astro.props;
+---
+
+<Base title={`${title} · LupinOS · ${owner.name}`} description={description}>
+  <OS client:only="react" />
+</Base>

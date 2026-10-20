@@ -1,0 +1,9 @@
+---
+import Base from "../layouts/Base.astro";
+import OS from "../os/OS";
+import { owner } from "../content/owner";
+---
+
+<Base title={`LupinOS · ${owner.name}, ${owner.role}`} description={`The portfolio of ${owner.name}, built as a made-up desktop operating system.`}>
+  <OS client:only="react" />
+</Base>

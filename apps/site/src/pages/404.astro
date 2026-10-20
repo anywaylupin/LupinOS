@@ -1,0 +1,49 @@
+---
+// The 404 page is a kernel panic with a reboot button that goes home.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kernel panic · LupinOS</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #0d0101;
+        color: #ff5a4f;
+        font: 15px/1.7 ui-monospace, Consolas, monospace;
+        display: grid;
+        place-items: center;
+      }
+      main {
+        max-width: 640px;
+        padding: 24px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      a {
+        display: inline-block;
+        margin-top: 18px;
+        padding: 8px 22px;
+        background: #ff5a4f;
+        color: #0d0101;
+        text-decoration: none;
+        font-weight: 700;
+        clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>KERNEL PANIC: PAGE_NOT_ISSUED</h1>
+      <p>The page you requested was never issued by the Hive Corporation.</p>
+      <p>This incident has been politely noted.</p>
+      <a href="/">Reboot</a> &nbsp; <a href="/plain" style="background:none;color:#ff5a4f;border:1px solid">Plain version</a>
+    </main>
+  </body>
+</html>

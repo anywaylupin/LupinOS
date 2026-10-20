@@ -1,0 +1,30 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="theme-color" content="#061227" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" href="/plain" title="Plain version" />
+  </head>
+  <body>
+    <noscript>
+      <p style="color:#fff;font-family:system-ui;padding:2rem">
+        LupinOS needs JavaScript. The whole portfolio is also on the <a href="/plain" style="color:#ffb703">plain version</a>.
+      </p>
+    </noscript>
+    <slot />
+  </body>
+</html>
