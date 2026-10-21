@@ -2,7 +2,10 @@
 // lock screen, the screensaver, the rare kernel panic, and shut down.
 import { Button, UiIcon } from "@lupinos/ui";
 import { type CSSProperties, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { effectiveMotion } from "./actions";
+import { fakeUpdate } from "./fun";
 import { useT } from "./i18n";
+import { DROP_MS, Liquid, WelcomeDrop } from "./Liquid";
 import * as os from "./store";
 import { Avatar, clock, day, LupinMark, useNow } from "./ui";
 
@@ -26,7 +29,9 @@ export function Boot({ onDone }: { onDone: () => void }) {
   const returning = os.useOS((s) => s.visits > 1);
   const [done, setDone] = useState(false);
   const [leaving, leave] = useLeave(650, onDone);
-  const ms = returning ? BOOT_MS.returning : BOOT_MS.first;
+  // Sometimes a restart installs an update. It never lasts more than three seconds, and Skip works.
+  const [update] = useState(fakeUpdate);
+  const ms = (returning ? BOOT_MS.returning : BOOT_MS.first) + (update ? 2600 : 0);
   useEffect(() => {
     const t = setTimeout(() => setDone(true), ms);
     const skip = () => setDone(true);
@@ -48,16 +53,34 @@ export function Boot({ onDone }: { onDone: () => void }) {
       <div className="boot-bar" role="progressbar" aria-label="Starting LupinOS">
         <i style={{ animationDuration: `${ms - 200}ms` }} />
       </div>
+      {update && (
+        <div className="boot-update">
+          <p>Installing update 1 of 9999</p>
+          <button type="button" className="lui-button" data-variant="plain" onClick={() => setDone(true)}>
+            Fine, I will do it later
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-export function Greeting({ user, onDone }: { user: os.User; onDone: () => void }) {
+/** Whether the welcome plays its liquid drop: liquid glass on, and motion not turned down. */
+function dropOn(settings: os.Settings) {
+  const motion = effectiveMotion(settings) ?? (matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full");
+  return settings.liquid && motion === "full";
+}
+
+export function Greeting({ user, settings, mode, onDone }: { user: os.User; settings: os.Settings; mode: "light" | "dark"; onDone: () => void }) {
   const t = useT();
   const text = user.kind === "guest" ? t("Welcome") : t("Welcome back, {name}", { name: user.name });
   const [leaving, leave] = useLeave(800, onDone);
+  const [drop] = useState(() => dropOn(settings));
+  // Without the drop the card is there from the start; with it, the card waits for the landing.
+  const [landed, setLanded] = useState(!drop);
+  const land = useCallback(() => setLanded(true), []);
   useEffect(() => {
-    const tm = setTimeout(leave, 2600);
+    const tm = setTimeout(leave, 2600 + (drop ? DROP_MS : 0));
     addEventListener("pointerdown", leave, { once: true });
     addEventListener("keydown", leave, { once: true });
     return () => {
@@ -65,21 +88,24 @@ export function Greeting({ user, onDone }: { user: os.User; onDone: () => void }
       removeEventListener("pointerdown", leave);
       removeEventListener("keydown", leave);
     };
-  }, [leave]);
+  }, [leave, drop]);
   return (
-    <div className="screen greeting" data-leaving={leaving || undefined}>
+    <div className="screen greeting" data-leaving={leaving || undefined} data-drop={drop || undefined} data-landed={landed || undefined}>
       <div className="lui-wallpaper" />
-      <div className="greeting-card">
-        <Avatar name={user.name} hue={user.hue} size={88} />
-        <h1 aria-label={text}>
-          {[...text].map((ch, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: letters repeat
-            <span key={i} aria-hidden="true" style={{ "--i": i } as CSSProperties}>
-              {ch === " " ? " " : ch}
-            </span>
-          ))}
-        </h1>
-      </div>
+      <Liquid on={drop} settings={settings} mode={mode} blur={28}>
+        {drop && <WelcomeDrop leaving={leaving} onLanded={land} />}
+        <div className="greeting-card">
+          <Avatar name={user.name} hue={user.hue} size={88} />
+          <h1 aria-label={text}>
+            {[...text].map((ch, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: letters repeat
+              <span key={i} aria-hidden="true" style={{ "--i": i } as CSSProperties}>
+                {ch === " " ? " " : ch}
+              </span>
+            ))}
+          </h1>
+        </div>
+      </Liquid>
     </div>
   );
 }

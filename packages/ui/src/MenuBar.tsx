@@ -13,11 +13,13 @@ export type MenuBarProps = {
   /** The focused app's name, shown in bold after the logo. */
   appName: string;
   menus: MenuBarMenu[];
+  /** Centre of the bar, such as the clock. */
+  center?: ReactNode;
   /** Right side: status items, usually ending in a <StatusCapsule>. */
   status?: ReactNode;
 };
 
-export function MenuBar({ logo, logoLabel = "System menu", logoItems, appName, menus, status }: MenuBarProps) {
+export function MenuBar({ logo, logoLabel = "System menu", logoItems, appName, menus, center, status }: MenuBarProps) {
   const all: MenuBarMenu[] = [{ label: logoLabel, items: logoItems }, ...menus];
   const [open, setOpen] = useState<number | null>(null);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -55,6 +57,7 @@ export function MenuBar({ logo, logoLabel = "System menu", logoItems, appName, m
       {title(0, logo, logoLabel)}
       <span className="lui-menubar-item lui-menubar-app">{appName}</span>
       {menus.map((m, i) => title(i + 1, m.label))}
+      {center && <div className="lui-menubar-center">{center}</div>}
       {status && <div className="lui-menubar-status">{status}</div>}
       {open !== null && anchor && (
         <Menu

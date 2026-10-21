@@ -1,4 +1,5 @@
 // Resume.pdf: a fake PDF viewer. Pages curl when turned; the download is the real file.
+import { emit } from "../os/bus";
 import { useState } from "react";
 import { owner } from "../content/owner";
 
@@ -42,6 +43,7 @@ export default function Resume() {
   const go = (d: number) => {
     setTurn(d > 0 ? "turn-next" : "turn-prev");
     setPage((p) => p + d);
+    if (page + d === pages.length - 1) emit({ type: "read-end", what: "resume" });
   };
   return (
     <div className="pdf">
@@ -56,7 +58,7 @@ export default function Resume() {
           Next
         </button>
         <span style={{ flex: 1 }} />
-        <a className="btn primary" href={resume.file} download>
+        <a className="btn primary" href={resume.file} download onClick={() => emit({ type: "resume-download" })}>
           Download PDF
         </a>
       </div>

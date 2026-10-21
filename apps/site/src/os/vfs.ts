@@ -45,11 +45,7 @@ export const ownerNodes: VNode[] = [
   f("about", "About.txt", "desktop", { open: "about" }),
   f("resume", "Resume.pdf", "desktop", { open: "resume" }),
   f("contact", "Contact", "desktop", { open: "contact" }),
-  dir("games", "Games", "desktop", { locked: true }),
-  f("games-soon", "coming-soon.txt", "games", {
-    open: "viewer",
-    text: "The arcade is under construction.\nThe hive thanks you for your patience.",
-  }),
+  f("games", "Games", "desktop", { open: "games" }),
   dir("projects", "Projects", "root", { locked: true }),
   ...projects.map((p) => f(`p-${p.slug}`, p.slug, "projects", { open: "project", arg: p.slug })),
   dir(HOME, "Home", "root"),

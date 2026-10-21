@@ -1,9 +1,15 @@
 ---
+import { themeFontsHref } from "@lupinos/ui";
+
 interface Props {
   title: string;
   description: string;
+  /** Preview image for sharing, from public/og (made by scripts/og.ts). */
+  image?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, image = "/og/home.png" } = Astro.props;
+// Link previews need an absolute URL; set SITE_URL when building for production.
+const imageUrl = Astro.site ? new URL(image, Astro.site).href : image;
 ---
 
 <!doctype html>
@@ -15,9 +21,23 @@ const { title, description } = Astro.props;
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={imageUrl} />
     <meta name="theme-color" content="#061227" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" href="/plain" title="Plain version" />
+    <!-- One font per theme, plus Chinese faces that only download when Chinese text shows -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- loaded without blocking the first paint; system fonts show until they arrive -->
+    <link rel="stylesheet" href={themeFontsHref} media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href={themeFontsHref} /></noscript>
   </head>
   <body>
     <noscript>

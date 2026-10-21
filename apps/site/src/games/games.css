@@ -1,0 +1,472 @@
+/* The arcade: shared game chrome, Minesweeper, Klondike, the canvas stage and the launcher.
+   Loaded with the first game window, like the games themselves. */
+
+.game {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  container-type: inline-size;
+}
+.game-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid var(--lui-sep);
+}
+.game-bar .muted {
+  font-size: 12px;
+}
+.game-bar > .lui-button:last-child {
+  margin-left: auto;
+}
+.led {
+  min-width: 44px;
+  padding: 2px 7px;
+  border-radius: 6px 2px 6px 2px;
+  background: rgb(12 11 16 / 0.88);
+  color: color-mix(in srgb, var(--lui-i1) 70%, #fff);
+  font: 600 13px / 1.4 var(--lui-font-mono);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--lui-i1) 60%, transparent);
+}
+.game-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--lui-content) 40%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fade 0.25s both;
+}
+.game-panel > div {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 300px;
+  padding: 18px 24px;
+  border-radius: 14px 5px 14px 5px;
+  background: var(--lui-menu);
+  box-shadow: var(--lui-rim), var(--lui-shadow-menu);
+  text-align: center;
+  animation: rise 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.game-panel strong {
+  font-size: 18px;
+}
+.game-panel p {
+  margin: 0;
+  color: var(--lui-muted);
+}
+
+/* Minesweeper */
+.mines-wrap {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 12px;
+}
+.mines-grid {
+  --c: min(30px, calc((100cqw - 32px) / var(--w)));
+  display: grid;
+  grid-template-columns: repeat(var(--w), var(--c));
+  gap: 2px;
+  padding: 6px;
+  border-radius: 10px 3px 10px 3px;
+  background: color-mix(in srgb, var(--lui-ink) 10%, transparent);
+}
+.mine-cell {
+  width: var(--c);
+  height: var(--c);
+  padding: 0;
+  border: 0;
+  border-radius: 4px 1px 4px 1px;
+  background: color-mix(in srgb, var(--lui-accent) 26%, var(--lui-content));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -1px 0 rgb(0 0 0 / 0.12);
+  color: var(--lui-ink);
+  cursor: default;
+  transition: background 0.12s, transform 0.08s;
+}
+/* beats the site rule that makes every control inherit its font */
+.game .mine-cell {
+  font: 700 calc(var(--c) * 0.5) / 1 var(--lui-font-mono);
+}
+.mine-cell:not([data-open]):hover {
+  background: color-mix(in srgb, var(--lui-accent) 40%, var(--lui-content));
+}
+.mine-cell:not([data-open]):active {
+  transform: scale(0.92);
+}
+.mine-cell[data-open] {
+  background: color-mix(in srgb, var(--lui-content) 85%, transparent);
+  box-shadow: none;
+  animation: fade 0.15s both;
+}
+.mine-cell[data-n="1"] { color: #3b82c4; }
+.mine-cell[data-n="2"] { color: #3f9a55; }
+.mine-cell[data-n="3"] { color: #d04a3c; }
+.mine-cell[data-n="4"] { color: #6b4bb5; }
+.mine-cell[data-n="5"] { color: #a0522d; }
+.mine-cell[data-n="6"] { color: #1c8c8c; }
+.mine-cell[data-flag]::before {
+  content: "";
+  display: block;
+  width: 45%;
+  height: 45%;
+  margin: auto;
+  background: var(--lui-accent);
+  clip-path: polygon(0 0, 100% 30%, 0 60%);
+}
+.mine-cell[data-mine] {
+  background: color-mix(in srgb, var(--lui-ink) 70%, transparent);
+}
+.mine-cell[data-mine]::before {
+  content: "";
+  display: block;
+  width: 46%;
+  height: 46%;
+  margin: auto;
+  border-radius: 50%;
+  background: var(--lui-content);
+}
+.mine-cell[data-mine="hit"] {
+  background: #e5484d;
+  animation: shake 0.4s both;
+}
+
+/* Klondike */
+.klondike {
+  --cw: min(86px, calc((100cqw - 24px - 6 * 8px) / 7));
+  --ch: calc(var(--cw) * 1.4);
+}
+.k-table {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px;
+  overflow: auto;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--lui-accent) 18%, transparent), transparent 70%),
+    color-mix(in srgb, var(--lui-i4) 82%, transparent);
+}
+.k-row {
+  display: grid;
+  grid-template-columns: repeat(7, var(--cw));
+  gap: 8px;
+  justify-content: center;
+}
+.k-tab {
+  flex: 1;
+}
+.k-slot {
+  position: relative;
+  width: var(--cw);
+  height: var(--ch);
+  padding: 0;
+  border: 0;
+  border-radius: 8px 3px 8px 3px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.16);
+}
+.k-pile {
+  height: auto;
+  min-height: calc(var(--ch) * 3.2);
+  box-shadow: none;
+}
+.k-pile:empty {
+  min-height: var(--ch);
+  height: var(--ch);
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.16);
+}
+.card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--cw);
+  height: var(--ch);
+  padding: 0;
+  border: 0;
+  border-radius: 8px 3px 8px 3px;
+  background: #fbfaf7;
+  color: #1d1d21;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 0 0 0.5px rgb(0 0 0 / 0.15);
+  font-family: var(--lui-font);
+  cursor: default;
+  touch-action: none;
+  transition: top 0.25s var(--lui-ease), left 0.25s var(--lui-ease), translate 0.2s var(--lui-ease);
+}
+.card:disabled {
+  color: inherit;
+}
+.card[data-red] {
+  color: #c8283e;
+}
+.card[data-dragging] {
+  transition: none;
+  box-shadow: 0 12px 26px rgb(0 0 0 / 0.35);
+}
+.card[data-nope] {
+  animation: shake 0.3s both;
+}
+.card-corner {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  display: grid;
+  justify-items: center;
+  font-size: calc(var(--cw) * 0.2);
+  font-weight: 700;
+  line-height: 1;
+}
+.card-corner i {
+  font-style: normal;
+  font-size: 0.85em;
+}
+.card-corner.end {
+  top: auto;
+  left: auto;
+  right: 5px;
+  bottom: 4px;
+  rotate: 180deg;
+}
+.card-pip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--cw) * 0.42);
+}
+.card-back {
+  position: absolute;
+  inset: 3px;
+  border-radius: 6px 2px 6px 2px;
+  background:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.14) 0 3px, transparent 3px 8px),
+    linear-gradient(135deg, var(--lui-accent), var(--lui-i2));
+}
+
+/* canvas games */
+.arcade-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  touch-action: none;
+}
+.arcade-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* the arcade launcher */
+.arcade-list {
+  padding: 4px 22px 22px;
+}
+.arcade-list h2 {
+  margin: 0 0 2px;
+  font-size: 20px;
+}
+.arcade-list header p {
+  margin: 0 0 16px;
+  font-size: 12px;
+}
+.arcade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.arcade-card {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 4px 12px;
+  padding: 14px;
+  border-radius: 14px 5px 14px 5px;
+  background: var(--lui-hover);
+  box-shadow: inset 0 0 0 0.5px var(--lui-sep);
+  transition: transform 0.25s var(--lui-spring), box-shadow 0.25s;
+  animation: rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.arcade-card:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 0.5px var(--lui-sep), 0 10px 24px -14px color-mix(in srgb, var(--lui-accent) 60%, transparent);
+}
+.arcade-card svg {
+  width: 52px;
+  height: 52px;
+  padding: 6px;
+  border-radius: 12px 4px 12px 4px;
+  background: color-mix(in srgb, var(--lui-accent) 16%, transparent);
+  fill: none;
+  stroke: var(--lui-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.arcade-card h3 {
+  margin: 0;
+  font-size: 14px;
+}
+.arcade-card p {
+  margin: 2px 0 4px;
+  color: var(--lui-muted);
+  font-size: 12px;
+}
+.arcade-card small {
+  font: 600 11px var(--lui-font-mono);
+  color: var(--lui-accent);
+}
+.arcade-actions {
+  grid-column: 2;
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+@supports (corner-shape: bevel) {
+  .card,
+  .card-back,
+  .k-slot,
+  .led,
+  .mine-cell,
+  .mines-grid,
+  .game-panel > div,
+  .arcade-card,
+  .arcade-card svg {
+    corner-shape: bevel round bevel round;
+  }
+}
+
+/* FreeCell: eight columns, so the cards are a little narrower */
+.freecell {
+  --cw: min(78px, calc((100cqw - 24px - 7 * 8px) / 8));
+}
+.fc-row {
+  grid-template-columns: repeat(8, var(--cw));
+}
+.fc-cell {
+  background: rgb(0 0 0 / 0.12);
+}
+
+/* board games and small puzzles share a centred stage */
+.board-stage {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  min-height: 0;
+  touch-action: none;
+}
+.c4 {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 6px;
+  width: min(420px, 86cqw);
+  padding: 10px;
+  border-radius: 16px 6px 16px 6px;
+  background: color-mix(in srgb, var(--lui-i2) 80%, #000);
+}
+.c4-col {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: default;
+}
+.c4-col:not(:disabled):hover {
+  background: rgb(255 255 255 / 0.08);
+}
+.c4-col i {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.4);
+}
+.c4-col i[data-v] {
+  animation: fall calc(0.08s * var(--fall) + 0.12s) cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+.c4-col i[data-v="1"] {
+  background: var(--lui-accent);
+}
+.c4-col i[data-v="-1"] {
+  background: #f2c14e;
+}
+.c4-col i[data-line] {
+  box-shadow: 0 0 0 3px #fff, 0 0 14px #fff;
+}
+@keyframes fall {
+  from {
+    translate: 0 calc(var(--fall) * -120%);
+  }
+}
+.merge {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: min(340px, 82cqw);
+  aspect-ratio: 1;
+  padding: 8px;
+  border-radius: 14px 5px 14px 5px;
+  background: color-mix(in srgb, var(--lui-ink) 12%, transparent);
+}
+.merge-cell {
+  display: grid;
+  place-items: center;
+  border-radius: 8px 3px 8px 3px;
+  background: color-mix(in srgb, var(--lui-content) 60%, transparent);
+  font: 700 clamp(14px, 6cqw, 28px) var(--lui-font-mono);
+  transition: background 0.15s;
+}
+.merge-cell[data-v] {
+  background: color-mix(in srgb, var(--lui-accent) calc(var(--t) * 9%), var(--lui-content));
+  color: var(--lui-ink);
+  animation: pop 0.15s var(--lui-spring) both;
+}
+.lights {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: min(320px, 80cqw);
+}
+.light {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 10px 3px 10px 3px;
+  background: color-mix(in srgb, var(--lui-ink) 14%, transparent);
+  cursor: default;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.light[aria-pressed="true"] {
+  background: #f2c14e;
+  box-shadow: 0 0 16px rgb(242 193 78 / 0.7);
+}
+@supports (corner-shape: bevel) {
+  .c4,
+  .merge,
+  .merge-cell,
+  .light {
+    corner-shape: bevel round bevel round;
+  }
+}
+
+@keyframes pop {
+  from {
+    scale: 0.3;
+    opacity: 0;
+  }
+}

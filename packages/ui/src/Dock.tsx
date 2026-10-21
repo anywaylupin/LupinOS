@@ -2,6 +2,7 @@
 // grow a little as the pointer passes and slide apart to make room. Drag an icon sideways to
 // reorder. Labels fade in, running apps get a dot, launching ones bounce.
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useRef } from "react";
+import { flushSync } from "react-dom";
 import { dockScale, type Rect } from "./geometry.ts";
 
 export type DockItem = {
@@ -88,30 +89,44 @@ export function Dock({ items, trailing = [], size = 50, magnify = 1.3, range, on
       e.currentTarget.dataset.dragging = "";
     }
     const step = size + GAP;
-    const to = Math.max(0, Math.min(items.length - 1, d.from + Math.round(dx / step)));
+    // The icon stays on the shelf: it can slide from the first slot to the last, no further.
+    const x = Math.max(-d.from * step, Math.min((items.length - 1 - d.from) * step, dx));
+    const to = d.from + Math.round(x / step);
     d.to = to;
     els()
       .slice(0, items.length)
       .forEach((el, i) => {
-        if (i === d.from) el.style.transform = `translateX(${dx}px) scale(1.12)`;
+        if (i === d.from) el.style.transform = `translateX(${x}px) scale(1.12)`;
         else if (d.from < to && i > d.from && i <= to) el.style.transform = `translateX(${-step}px)`;
         else if (d.from > to && i < d.from && i >= to) el.style.transform = `translateX(${step}px)`;
         else el.style.transform = "";
       });
   };
+  /** Glides the icon into its slot, then swaps the real order in one frame so nothing jumps. */
   const endDrag = (e: ReactPointerEvent<HTMLButtonElement>) => {
     const d = drag.current;
     drag.current = null;
     if (!d?.moved) return;
-    delete e.currentTarget.dataset.dragging;
+    const el = e.currentTarget;
+    delete el.dataset.dragging;
     suppressClick.current = true;
-    for (const el of els()) el.style.transform = "";
-    if (d.to !== d.from) {
-      const ids = items.map((it) => it.id);
-      const [moved] = ids.splice(d.from, 1);
-      ids.splice(d.to, 0, moved);
-      onReorder?.(ids);
-    }
+    el.style.transform = `translateX(${(d.to - d.from) * (size + GAP)}px)`;
+    setTimeout(() => {
+      const list = els();
+      for (const x of list) {
+        x.style.transition = "none";
+        x.style.transform = "";
+      }
+      if (d.to !== d.from) {
+        const ids = items.map((it) => it.id);
+        const [moved] = ids.splice(d.from, 1);
+        ids.splice(d.to, 0, moved);
+        flushSync(() => onReorder?.(ids));
+      }
+      requestAnimationFrame(() => {
+        for (const x of list) x.style.transition = "";
+      });
+    }, 240);
   };
 
   const button = (it: DockItem, index: number, reorderable: boolean) => (

@@ -3,6 +3,7 @@ import { AppIcon, Button, MenuButton, Segmented, SidebarItem, SidebarSection, Ui
 import { type CSSProperties, type KeyboardEvent, type MouseEvent, useEffect, useState } from "react";
 import { create } from "zustand";
 import { openNode } from "../os/actions";
+import { emit } from "../os/bus";
 import type { AppProps } from "../os/apps";
 import * as os from "../os/store";
 import { nodeIcon } from "../os/ui";
@@ -90,6 +91,9 @@ export default function Files({ win }: AppProps) {
   const [renaming, setRenaming] = useState<string | null>(null);
   const ctx = useContextMenu();
   const items = children(nodes, dir, prefs.hidden, sess?.hiddenIds);
+  useEffect(() => {
+    if (dir === "hive") emit({ type: "egg", id: "hive" });
+  }, [dir]);
   const open = (n: VNode) => (n.kind === "folder" ? (go(n.id), setSel([])) : openNode(n));
 
   // Phone edge swipe and similar "back" gestures go up one folder first.

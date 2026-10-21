@@ -1,10 +1,24 @@
 // Project viewer: cover, summary, stack chips and links. The cover tilts towards the pointer.
-import type { PointerEvent } from "react";
+import { type PointerEvent, useEffect, useRef } from "react";
+import { emit } from "../os/bus";
 import { projects } from "../content/owner";
 import type { AppProps } from "../os/apps";
 
 export default function Project({ win }: AppProps) {
   const p = projects.find((x) => x.slug === win.arg);
+  const end = useRef<HTMLDivElement>(null);
+  // Reading to the end of a project earns the desktop hero some gold.
+  useEffect(() => {
+    const el = end.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      emit({ type: "read-end", what: `project:${win.arg}` });
+      io.disconnect();
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [win.arg]);
   if (!p) return <p className="empty">This project was recalled by the issuing corporation.</p>;
   const tilt = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -40,6 +54,7 @@ export default function Project({ win }: AppProps) {
             </a>
           ))}
         </div>
+        <div ref={end} aria-hidden="true" />
       </div>
     </article>
   );

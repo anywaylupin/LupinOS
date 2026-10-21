@@ -3,6 +3,8 @@
 import { Button, Segmented, SidebarItem, SidebarSection, Switch, themeList, UiIcon } from "@lupinos/ui";
 import { type CSSProperties, type DragEvent, type ReactNode, useState } from "react";
 import { effectiveMode, restart } from "../os/actions";
+import { PRANKS, replayPrank } from "../os/fun";
+import { isMe, online, setMe } from "../os/net";
 import type { AppProps } from "../os/apps";
 import { useT } from "../os/i18n";
 import * as os from "../os/store";
@@ -18,6 +20,7 @@ const panes = [
   { id: "dock", label: "Dock and Desktop", icon: "home" },
   { id: "motion", label: "Motion", icon: "motion" },
   { id: "language", label: "Language and Region", icon: "globe" },
+  { id: "pranks", label: "Pranks", icon: "sparkle" },
   { id: "access", label: "Accessibility", icon: "accessibility" },
   { id: "about", label: "About", icon: "info" },
 ];
@@ -103,6 +106,32 @@ const restore = (keys: (keyof os.Settings)[]) => {
   os.setSettings(Object.fromEntries(keys.map((k) => [k, d[k]])));
 };
 
+/** Being upfront about visit notifications, with the owner's own opt-out. */
+function Privacy() {
+  const [me, setMeState] = useState(isMe);
+  return (
+    <div className="set-group privacy">
+      <div className="set-row">
+        <div>
+          <div>This is me</div>
+          <small>Stops visits from this browser being counted. For the owner.</small>
+        </div>
+        <Switch
+          checked={me}
+          onChange={(e) => {
+            setMe(e.target.checked);
+            setMeState(e.target.checked);
+          }}
+          aria-label="This is me"
+        />
+      </div>
+      <p className="muted">
+        The site tells its owner when someone visits: the country, the device type, the theme and which apps were opened. The full IP address is never stored, and Global Privacy Control turns this into an anonymous count.
+      </p>
+    </div>
+  );
+}
+
 export default function Settings({ win }: AppProps) {
   const sess = os.useSession();
   const t = useT();
@@ -132,7 +161,7 @@ export default function Settings({ win }: AppProps) {
               <Segmented
                 label={t("Mode")}
                 value={s.mode}
-                onChange={(m) => set({ mode: m })}
+                onChange={(m) => os.crossfade(() => set({ mode: m }))}
                 options={[
                   { value: "system", label: t("Auto") },
                   { value: "light", label: t("Light") },
@@ -148,6 +177,7 @@ export default function Settings({ win }: AppProps) {
               <button key={th.id} type="button" role="radio" aria-checked={s.theme === th.id} className="theme-card" onClick={() => os.switchTheme(th.id)}>
                 {/* Each preview is its own themed root, so it shows the theme's real window and font. */}
                 <span className="theme-preview lui" data-lui-theme={th.id} data-lui-mode={mode} style={{ background: th.wallpaper, "--lui-font-face": "initial" } as CSSProperties}>
+                  <span className="lui-wallpaper" aria-hidden="true" />
                   <span className="theme-win">
                     <span className="theme-win-bar">
                       <i />
@@ -246,7 +276,24 @@ export default function Settings({ win }: AppProps) {
         <>
           <h2>{t("Windows")}</h2>
           <div className="set-group">
-            <Slider label={t("Transparency")} value={1 - s.glass} min={0} max={0.6} step={0.02} format={pct} onChange={(v) => set({ glass: Math.round((1 - v) * 100) / 100 })} />
+            <Row label={t("Window Mode")} hint="Freestyle floats windows. Tiling shares the screen like Hyprland. Chain lines them up on a strip you scroll. Alt+T switches.">
+              <Segmented
+                label={t("Window Mode")}
+                value={sess.wm}
+                onChange={(m) => os.setWinMode(m)}
+                options={[
+                  { value: "free", label: t("Freestyle") },
+                  { value: "tile", label: t("Tiling") },
+                  { value: "chain", label: t("Chain") },
+                ]}
+              />
+            </Row>
+          </div>
+          <div className="set-group" style={{ marginTop: 12 }}>
+            <Row label={t("Liquid glass")} hint="Top bar, dock and widgets become liquid that refracts the wallpaper and fuses when close. Uses the graphics card.">
+              <Switch checked={s.liquid} onChange={(e) => set({ liquid: e.target.checked })} aria-label={t("Liquid glass")} />
+            </Row>
+            <Slider label={t("Transparency")} value={1 - s.glass} min={0} max={1} step={0.02} format={pct} onChange={(v) => set({ glass: Math.round((1 - v) * 100) / 100 })} />
             <Slider label={t("Blur")} value={s.blur} min={0} max={60} step={2} format={(v) => `${v}px`} onChange={(v) => set({ blur: v })} />
             <Slider label={t("Shadow")} value={s.shadow} min={0} max={2} step={0.1} format={pct} onChange={(v) => set({ shadow: v })} />
             <Slider label={t("Corner radius")} value={s.radius} min={4} max={26} step={1} format={(v) => `${v}px`} onChange={(v) => set({ radius: v })} />
@@ -289,6 +336,9 @@ export default function Settings({ win }: AppProps) {
             </Row>
             <Row label={t("Clean Up")} hint="Drag icons anywhere on the desktop or in the dock. This puts desktop icons back in a column.">
               <Button onClick={() => os.setIconPos({})}>{t("Clean Up")}</Button>
+            </Row>
+            <Row label={t("Widgets…")} hint="Clocks, weather, notes and more. Drag them anywhere.">
+              <Button onClick={() => os.setOverlay("widgets")}>{t("Widgets…")}</Button>
             </Row>
           </div>
           <Button variant="plain" onClick={() => restore(["dockSize", "magnify", "iconSize"])}>
@@ -344,6 +394,27 @@ export default function Settings({ win }: AppProps) {
         </>
       )}
 
+      {pane === "pranks" && (
+        <>
+          <h2>{t("Pranks")}</h2>
+          <div className="set-group">
+            <Row label={t("Serious mode")} hint="Turns every prank off. The content never waits for a joke either way.">
+              <Switch checked={s.serious} onChange={(e) => set({ serious: e.target.checked })} aria-label={t("Serious mode")} />
+            </Row>
+          </div>
+          <h3>Each prank plays once per visitor. Replay one here.</h3>
+          <div className="set-group">
+            {PRANKS.map((p) => (
+              <Row key={p.id} label={p.name} hint={sess.seen.includes(`prank:${p.id}`) ? "Already played" : "Not played yet"}>
+                <Button variant="plain" disabled={s.serious} onClick={() => replayPrank(p.id)}>
+                  {t("Replay")}
+                </Button>
+              </Row>
+            ))}
+          </div>
+        </>
+      )}
+
       {pane === "access" && (
         <>
           <h2>{t("Accessibility")}</h2>
@@ -366,6 +437,7 @@ export default function Settings({ win }: AppProps) {
           <p className="muted">
             No cookies. Profiles, files and wallpapers stay in this browser. <a href="/plain">Plain version</a>
           </p>
+          {online && <Privacy />}
           <Button
             onClick={() =>
               os.confirmDialog("Reset this profile?", "Settings, windows, files and uploads in this profile will be erased.", "Reset", () => {

@@ -2,6 +2,7 @@
 // the visitor's own mail app does the sending.
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { owner } from "../content/owner";
+import { emit } from "../os/bus";
 import type { AppProps } from "../os/apps";
 
 type Line = { me: boolean; text: string; mail?: string };
@@ -32,6 +33,7 @@ export default function Contact({ win }: AppProps) {
     if (!text) return;
     setLines((l) => [...l, { me: true, text }]);
     setDraft("");
+    emit({ type: "contact-sent" });
     const mail = `mailto:${owner.email}?subject=${encodeURIComponent("Hello from LupinOS")}&body=${encodeURIComponent(text)}`;
     reply("Got it. Your mail app will open with this message ready to send.", mail);
   };

@@ -6,14 +6,19 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test src/os/vfs.test.ts src/os/grid.test.ts"
+    "test": "node --test src/os/vfs.test.ts src/os/grid.test.ts src/games/games.test.ts src/os/wm.test.ts src/os/wallpaint.test.ts",
+    "og": "node scripts/og.ts"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.0",
+    "@cruxgarden/plasma-ui": "0.8.0",
     "@lupinos/ui": "workspace:*",
     "astro": "^7.4.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

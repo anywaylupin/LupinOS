@@ -35,12 +35,12 @@ export function Avatar({ name, hue, size = 64 }: { name: string; hue: number; si
   );
 }
 
-/** The LupinOS mark: a heavy L with one accent square. Each piece slides in on boot. */
+/** The LupinOS mark: a heavy L and one accent square that square off into a landscape rectangle. Each piece slides in on boot. */
 export function LupinMark({ size = 96, animate = false }: { size?: number; animate?: boolean }) {
   const parts: [string, string, number, number][] = [
-    ["M13 7h9v34h-9z", "currentColor", -40, 0],
-    ["M13 32h24v9H13z", "currentColor", 0, 40],
-    ["M30 8h9v9h-9z", "var(--lui-accent)", 40, -40],
+    ["M9 11h9v26H9z", "currentColor", -40, 0],
+    ["M9 28h30v9H9z", "currentColor", 0, 40],
+    ["M30 11h9v9h-9z", "var(--lui-accent)", 40, -40],
   ];
   return (
     <svg viewBox="0 0 48 48" width={size} height={size} aria-label="LupinOS" className={animate ? "mark animate" : "mark"}>
@@ -97,6 +97,8 @@ export function useNow(ms = 1000) {
   }, [ms]);
   return now;
 }
+
+export const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 export const rectOf = (el: Element | null | undefined) => {
   const r = el?.getBoundingClientRect();

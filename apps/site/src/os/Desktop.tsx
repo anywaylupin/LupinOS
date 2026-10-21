@@ -1,15 +1,21 @@
 // The desktop shell: menu bar, desktop icons, windows on four desktops, and the dock.
 // Chrome comes from @lupinos/ui; this file wires it to the store.
-import { AppIcon, Calendar, Dock, type DockItem, Drawer, lunarDate, MenuBar, type MenuItem, StatusCapsule, themeList, UiIcon, useContextMenu } from "@lupinos/ui";
+import { AppIcon, Calendar, Dock, type DockItem, Drawer, lunarDate, MenuBar, MenuButton, type MenuItem, StatusCapsule, themeList, UiIcon, useContextMenu, usePortalTarget } from "@lupinos/ui";
+import { createPortal } from "react-dom";
 import { type CSSProperties, type DragEvent, type KeyboardEvent, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from "react";
-import { effectiveMode, openNode, restart, shutdown, toggleMode } from "./actions";
+import { chainFor, deskArea, effectiveMode, GAP, openNode, restart, shutdown, tileLayout, toggleMode } from "./actions";
+import { clampOffset, dropIndex, reveal } from "./wm";
 import { apps } from "./apps";
 import { cellKey, layoutIcons, nearestFree } from "./grid";
 import { localeOf, useT } from "./i18n";
 import * as os from "./store";
-import { clock, day, LupinMark, nodeIcon, rectOf, useNow, useOutside } from "./ui";
+import { Avatar, clock, day, LupinMark, nodeIcon, rectOf, useNow, useOutside } from "./ui";
 import { children, type VNode } from "./vfs";
 import { uploadWallpaper } from "./Wallpaper";
+import * as music from "./music";
+import "./desktop.css";
+import { Liquid } from "./Liquid";
+import { Widgets } from "./Widgets";
 import { DesktopWindow } from "./Window";
 
 /** Re-renders on window resize. */
@@ -108,10 +114,13 @@ function NotificationCentre({ open, onClose, settings }: { open: boolean; onClos
 function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const t = useT();
-  const [volume, setVolume] = useState(60);
+  const { volume } = music.useMusic();
   useOutside(ref, onClose);
   const dark = effectiveMode(sess.settings) === "dark";
-  return (
+  // Rendered at the root: the menu bar's glass blur would otherwise trap this fixed panel inside it.
+  const target = usePortalTarget();
+  if (!target) return null;
+  return createPortal(
     <div ref={ref} className="cc" role="dialog" aria-label={t("Quick Settings")}>
       <div className="cc-tiles">
         <button type="button" className="cc-tile" aria-pressed="true" onClick={() => os.notify("Connected to HIVE-NET", "Signal strength: adequate for compliance.")}>
@@ -135,7 +144,7 @@ function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => voi
       </div>
       <label className="cc-slider">
         <span>{t("Sound")}</span>
-        <input type="range" min={0} max={100} value={volume} onChange={(e) => setVolume(Number(e.target.value))} style={{ "--v": `${volume}%` } as CSSProperties} />
+        <input type="range" min={0} max={100} value={Math.round(volume * 100)} onChange={(e) => music.setVolume(Number(e.target.value) / 100)} style={{ "--v": `${volume * 100}%` } as CSSProperties} />
       </label>
       <div className="cc-themes" role="radiogroup" aria-label={t("Theme")}>
         {themeList.map((th) => (
@@ -163,17 +172,33 @@ function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => voi
         <UiIcon name="settings" />
         {t("Settings…")}
       </button>
-    </div>
+    </div>,
+    target,
   );
 }
 
-function StatusArea({ sess }: { sess: os.Session }) {
+/** The clock in the middle of the bar. It opens the notification centre and calendar. */
+function ClockArea({ sess }: { sess: os.Session }) {
   const now = useNow();
-  const battery = useBattery();
   const notes = os.useOS((s) => s.notes.length);
   const t = useT();
-  const [qs, setQs] = useState(false);
   const [nc, setNc] = useState(false);
+  return (
+    <>
+      <button type="button" className="lui-capsule clock-capsule" aria-label={t("Notifications")} aria-expanded={nc} onClick={() => setNc(!nc)}>
+        <span>{day(now, { weekday: "short", day: "numeric", month: "short" })}</span>
+        <b>{clock(now)}</b>
+        {notes > 0 && <i className="nc-dot" aria-hidden="true" />}
+      </button>
+      <NotificationCentre open={nc} onClose={() => setNc(false)} settings={sess.settings} />
+    </>
+  );
+}
+
+function StatusArea({ sess, user }: { sess: os.Session; user: os.User }) {
+  const battery = useBattery();
+  const t = useT();
+  const [qs, setQs] = useState(false);
   return (
     <>
       <button type="button" className="lui-menubar-item" aria-label={t("Search")} onClick={() => os.setOverlay("search")}>
@@ -187,19 +212,25 @@ function StatusArea({ sess }: { sess: os.Session }) {
           {battery.level}%
         </span>
       </StatusCapsule>
-      <button type="button" className="lui-capsule clock-capsule" aria-label={t("Notifications")} aria-expanded={nc} onClick={() => setNc(!nc)}>
-        <span>
-          {day(now, { weekday: "short", day: "numeric", month: "short" })} {clock(now)}
-        </span>
-        {notes > 0 && <i className="nc-dot" aria-hidden="true" />}
-      </button>
+      <MenuButton
+        className="lui-menubar-item user-menu"
+        label={user.name}
+        items={[
+          { label: user.name, disabled: true },
+          "separator",
+          { label: t("Settings…"), onSelect: () => os.open("settings") },
+          { label: t("Lock Screen"), shortcut: "⌥L", onSelect: os.lock },
+          { label: t("Switch User…"), onSelect: os.lock },
+        ]}
+      >
+        <Avatar name={user.name} hue={user.hue} size={18} />
+      </MenuButton>
       {qs && <QuickSettings sess={sess} onClose={() => setQs(false)} />}
-      <NotificationCentre open={nc} onClose={() => setNc(false)} settings={sess.settings} />
     </>
   );
 }
 
-function TopBar({ sess }: { sess: os.Session }) {
+function TopBar({ sess, user }: { sess: os.Session; user: os.User }) {
   const t = useT();
   const top = os.topWindow(sess);
   const def = top ? apps[top.app] : undefined;
@@ -248,6 +279,9 @@ function TopBar({ sess }: { sess: os.Session }) {
         { label: t("Home"), onSelect: () => os.open("files", { arg: "home", title: "Home" }) },
         { label: t("Files"), shortcut: "⌥E", onSelect: () => os.open("files", { arg: "root" }) },
         { label: t("Terminal"), shortcut: "⌥↩", onSelect: () => os.open("terminal") },
+        { label: t("Games"), onSelect: () => os.open("games") },
+        { label: t("Guestbook"), onSelect: () => os.open("guestbook") },
+        { label: t("Achievements"), onSelect: () => os.open("achievements") },
         "separator",
         ...[0, 1, 2, 3].map((i) => ({ label: `${t("Desktop")} ${i + 1}`, shortcut: `⌥${i + 1}`, checked: sess.ws === i, onSelect: () => os.setWs(i) })),
       ] as MenuItem[],
@@ -258,6 +292,13 @@ function TopBar({ sess }: { sess: os.Session }) {
         { label: t("Minimise"), shortcut: "⌥M", disabled: !top, onSelect: () => top && os.minimize(top.id) },
         { label: t("Zoom"), shortcut: "⌥F", disabled: !top, onSelect: () => top && os.toggleMax(top.id) },
         { label: t("Minimise Others"), disabled: !top, onSelect: () => top && os.minimizeOthers(top.id) },
+        "separator",
+        {
+          label: t("Window Mode"),
+          items: (["free", "tile", "chain"] as const).map((m) => ({ label: t(os.MODE_NAMES[m]), checked: sess.wm === m, onSelect: () => os.setWinMode(m) })),
+        },
+        { label: t("Next Window Mode"), shortcut: "⌥T", onSelect: os.cycleWinMode },
+        { label: t("Cascade Windows"), disabled: sess.wm !== "free", onSelect: () => os.cascade(deskArea()) },
         ...(sess.windows.length ? (["separator"] as MenuItem[]) : []),
         ...sess.windows.map((w) => ({ label: w.title, checked: top?.id === w.id, onSelect: () => (os.setWs(w.ws), os.focus(w.id)) })),
       ] as MenuItem[],
@@ -272,7 +313,7 @@ function TopBar({ sess }: { sess: os.Session }) {
       ] as MenuItem[],
     },
   ];
-  return <MenuBar logo={<LupinMark size={15} />} logoLabel="LupinOS" logoItems={logoItems} appName={def ? t(def.name) : "LupinOS"} menus={menus} status={<StatusArea sess={sess} />} />;
+  return <MenuBar logo={<LupinMark size={15} />} logoLabel="LupinOS" logoItems={logoItems} appName={def ? t(def.name) : "LupinOS"} menus={menus} center={<ClockArea sess={sess} />} status={<StatusArea sess={sess} user={user} />} />;
 }
 
 // ---- desktop icons ---------------------------------------------------------------------------
@@ -429,6 +470,7 @@ function Icons({ sess }: { sess: os.Session }) {
     "separator",
     { label: t("Change Wallpaper…"), onSelect: () => os.open("settings", { arg: "wallpaper" }) },
     { label: t("Clean Up"), onSelect: () => os.setIconPos({}) },
+    { label: t("Widgets…"), onSelect: () => os.setOverlay("widgets") },
     {
       label: t("Sort By"),
       items: [
@@ -570,9 +612,10 @@ function DesktopDock({ sess }: { sess: os.Session }) {
   const items: DockItem[] = [...pinned]
     .sort((a, b) => rank(a) - rank(b))
     .map((id) => (id === "launcher" ? { id, label: t("All Apps"), icon: <AppIcon name="launcher" />, onClick: () => os.setOverlay("launcher") } : appItem(id)));
+  // A minimised window gets its own icon only when its app is not pinned; pinned apps toggle in place.
   const trailing: DockItem[] = [
     ...sess.windows
-      .filter((w) => w.min)
+      .filter((w) => w.min && !pinned.includes(w.app))
       .map((w) => ({ id: `win:${w.id}`, label: w.title, icon: <AppIcon name={apps[w.app].icon} />, onClick: () => (os.setWs(w.ws), os.focus(w.id)) })),
     { ...appItem("trash"), icon: <AppIcon name="trash" /> },
   ];
@@ -588,19 +631,118 @@ function DesktopDock({ sess }: { sess: os.Session }) {
 
 function Workspaces({ sess }: { sess: os.Session }) {
   const top = os.topWindow(sess);
+  const offsets = os.useOS((st) => st.chainOffset);
   useViewport();
+
+  // Chain: whenever focus moves, scroll the strip just enough to show the focused column.
+  useEffect(() => {
+    if (sess.wm !== "chain" || !top) return;
+    const c = chainFor(sess, sess.ws, offsets[sess.ws]);
+    const r = c.rects.get(top.id);
+    if (!r) return;
+    const next = clampOffset(reveal(c.offset, r, innerWidth, GAP), c.width, innerWidth);
+    if (next !== c.offset) os.setChainOffset(sess.ws, next);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: reveal on focus, width and count changes
+  }, [sess.wm, sess.ws, top?.id, top?.w, sess.windows.length]);
+
   return (
-    <div className="ws-strip" style={{ "--ws": sess.ws } as CSSProperties}>
-      {[0, 1, 2, 3].map((ws) => (
-        <div key={ws} className="ws" inert={ws !== sess.ws} aria-label={`Desktop ${ws + 1}`}>
-          {sess.windows
-            .filter((w) => w.ws === ws)
-            .map((w) => (
-              <DesktopWindow key={w.id} win={w} focused={top?.id === w.id} settings={sess.settings} />
+    <div className="ws-strip" data-wm={sess.wm} style={{ "--ws": sess.ws } as CSSProperties}>
+      {[0, 1, 2, 3].map((ws) => {
+        const tiles = sess.wm === "tile" ? tileLayout(sess, ws) : null;
+        const chain = sess.wm === "chain" ? chainFor(sess, ws, offsets[ws]) : null;
+        const onDrop = (id: string, p: { x: number; y: number }) => {
+          if (tiles) {
+            const other = [...tiles].find(([, t]) => p.x >= t.x && p.x < t.x + t.w && p.y >= t.y && p.y < t.y + t.h)?.[0];
+            if (other && other !== id) os.swapWindows(id, other);
+          } else if (chain) os.moveWindowTo(id, dropIndex(chain.rects, id, p.x + chain.offset));
+        };
+        const area = deskArea();
+        const bounds = chain ? () => ({ x: 0, y: area.y, w: Math.max(chain.width, innerWidth), h: area.h }) : undefined;
+        const wins = sess.windows.filter((w) => w.ws === ws);
+        return (
+          <div
+            key={ws}
+            className="ws"
+            inert={ws !== sess.ws}
+            aria-label={`Desktop ${ws + 1}`}
+            style={chain ? { translate: `${-chain.offset}px 0` } : undefined}
+          >
+            {wins.map((w, i) => (
+              <DesktopWindow
+                key={w.id}
+                win={w}
+                focused={top?.id === w.id}
+                settings={sess.settings}
+                tag={String(i + 1).padStart(2, "0")}
+                mode={sess.wm}
+                slot={tiles?.get(w.id) ?? chain?.rects.get(w.id)}
+                bounds={bounds}
+                onDrop={onDrop}
+              />
             ))}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+/**
+ * Chain mode extras: arrows at the screen edges when columns are out of view, a minimap of the
+ * strip above the dock, and the wheel or a trackpad swipe to scroll it.
+ */
+function ChainBar({ sess }: { sess: os.Session }) {
+  const t = useT();
+  const offsets = os.useOS((st) => st.chainOffset);
+  const top = os.topWindow(sess);
+  const chain = sess.wm === "chain";
+  useEffect(() => {
+    if (!chain) return;
+    const ws = sess.ws;
+    const wheel = (e: WheelEvent) => {
+      // Scrolling inside an app scrolls the app; anywhere else the strip moves.
+      if ((e.target as Element).closest?.(".lui-window-body, .lui-menu, .lui-drawer, .cc, .widget, .lui-dock, .lui-palette")) return;
+      const s = os.session();
+      if (!s) return;
+      const c = chainFor(s, ws);
+      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      os.setChainOffset(ws, clampOffset(c.offset + d, c.width, innerWidth));
+    };
+    addEventListener("wheel", wheel, { passive: true });
+    return () => removeEventListener("wheel", wheel);
+  }, [chain, sess.ws]);
+  if (!chain) return null;
+  const c = chainFor(sess, sess.ws, offsets[sess.ws]);
+  if (!c.rects.size) return null;
+  const full = Math.max(c.width, innerWidth);
+  const scale = 240 / full;
+  const page = (dir: number) => os.setChainOffset(sess.ws, clampOffset(c.offset + dir * innerWidth * 0.6, c.width, innerWidth));
+  return (
+    <>
+      {c.offset > 1 && (
+        <button type="button" className="chain-arrow" data-side="left" aria-label={t("Scroll left")} onClick={() => page(-1)}>
+          <UiIcon name="chevron-left" />
+        </button>
+      )}
+      {c.offset + innerWidth < c.width - 1 && (
+        <button type="button" className="chain-arrow" data-side="right" aria-label={t("Scroll right")} onClick={() => page(1)}>
+          <UiIcon name="chevron-right" />
+        </button>
+      )}
+      <nav className="chain-map" aria-label={t("Chain")} style={{ width: full * scale }}>
+        {[...c.rects].map(([id, r]) => (
+          <button
+            key={id}
+            type="button"
+            aria-label={sess.windows.find((w) => w.id === id)?.title}
+            aria-current={top?.id === id || undefined}
+            style={{ left: r.x * scale, width: r.w * scale }}
+            onClick={() => os.focus(id)}
+          />
+        ))}
+        <i style={{ left: c.offset * scale, width: innerWidth * scale }} />
+      </nav>
+    </>
   );
 }
 
@@ -633,15 +775,19 @@ function DesktopHud({ ws }: { ws: number }) {
   );
 }
 
-export function Desktop({ sess }: { sess: os.Session; user: os.User }) {
+export function Desktop({ sess, user }: { sess: os.Session; user: os.User }) {
   const fx = os.useOS((s) => s.fx);
   return (
-    <div className={`desktop${fx === "meltdown" ? " meltdown" : ""}`}>
-      <Icons sess={sess} />
-      <Workspaces sess={sess} />
-      <TopBar sess={sess} />
-      <DesktopDock sess={sess} />
-      <DesktopHud ws={sess.ws} />
+    <div className={`desktop${fx === "meltdown" ? " meltdown" : ""}`} data-liquid={sess.settings.liquid || undefined}>
+      <Liquid on={sess.settings.liquid} settings={sess.settings} mode={effectiveMode(sess.settings)}>
+        <Icons sess={sess} />
+        <Widgets sess={sess} />
+        <Workspaces sess={sess} />
+        <ChainBar sess={sess} />
+        <TopBar sess={sess} user={user} />
+        <DesktopDock sess={sess} />
+        <DesktopHud ws={sess.ws} />
+      </Liquid>
     </div>
   );
 }

@@ -7,7 +7,7 @@
     "build": "pnpm --filter @lupinos/ui build && pnpm --filter @lupinos/site build",
     "preview": "pnpm --filter @lupinos/site preview",
     "test": "pnpm -r test",
-    "typecheck": "tsc -p packages/ui && tsc -p apps/site"
+    "typecheck": "tsc -p packages/ui && tsc -p apps/site && tsc -p apps/server"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

@@ -5,14 +5,15 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  /* clip, not hidden: focus or scrollIntoView inside a window must never scroll the whole OS */
+  overflow: clip;
   background: #111;
 }
 
 .os {
   position: fixed;
   inset: 0;
-  overflow: hidden;
+  overflow: clip;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   /* short names the apps use, mapped to the package tokens */
@@ -196,6 +197,25 @@ body {
     filter: blur(12px);
     transform: scale(1.08) translateY(-12px);
   }
+}
+/* the liquid welcome: a drop falls into the card's place, the card's glass forms around it, then
+   the greeting plays. Until the landing the card keeps its size (the glass measures it) but stays hidden. */
+.welcome-drop {
+  position: fixed;
+  left: calc(50% - 22px);
+  top: calc(50% - 22px);
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+}
+.greeting[data-drop] .greeting-card {
+  z-index: 1;
+  padding: 34px 56px 30px;
+}
+.greeting[data-drop]:not([data-landed]) .greeting-card,
+.greeting[data-drop]:not([data-landed]) .greeting-card * {
+  visibility: hidden;
+  animation: none;
 }
 .greeting-card svg {
   filter: drop-shadow(0 6px 16px rgb(0 0 0 / 0.25));
@@ -658,8 +678,8 @@ body {
   padding: 10px;
   border-radius: 22px;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.02)), var(--lui-menu);
-  backdrop-filter: blur(var(--lui-blur)) saturate(190%);
-  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
   box-shadow: var(--lui-rim), var(--lui-shadow-pop);
   color: var(--lui-ink);
   transform-origin: top right;
@@ -667,7 +687,7 @@ body {
 }
 .cc > * {
   border-radius: 14px;
-  background: color-mix(in srgb, var(--lui-content) 55%, transparent);
+  background: color-mix(in srgb, var(--lui-content) 28%, transparent);
   box-shadow: inset 0 0 0 0.5px var(--lui-sep);
   padding: 10px 12px;
 }
@@ -686,7 +706,7 @@ body {
   padding: 10px 4px;
   border: 0;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--lui-content) 55%, transparent);
+  background: color-mix(in srgb, var(--lui-content) 28%, transparent);
   box-shadow: inset 0 0 0 0.5px var(--lui-sep);
   font-size: 12px;
   cursor: default;
@@ -843,8 +863,8 @@ body {
   padding: 18px 20px;
   border-radius: 14px;
   background: var(--lui-menu);
-  backdrop-filter: blur(50px) saturate(190%);
-  -webkit-backdrop-filter: blur(50px) saturate(190%);
+  -webkit-backdrop-filter: blur(50px) saturate(130%);
+  backdrop-filter: blur(50px) saturate(130%);
   box-shadow: var(--lui-shadow-pop);
   color: var(--lui-ink);
   animation: lui-pop 0.2s var(--lui-ease) both;
@@ -880,7 +900,7 @@ kbd {
   padding: 14px;
   border-radius: 22px;
   background: var(--lui-menu);
-  backdrop-filter: blur(50px) saturate(190%);
+  backdrop-filter: blur(50px) saturate(130%);
   box-shadow: var(--lui-shadow-pop);
   color: var(--lui-ink);
   animation: lui-pop 0.18s var(--lui-ease) both;
@@ -919,8 +939,8 @@ kbd {
   align-items: center;
   padding: 7vh 24px 24px;
   background: radial-gradient(120% 90% at 50% 0%, rgb(0 0 0 / 0.38), rgb(0 0 0 / 0.62));
-  backdrop-filter: blur(44px) saturate(140%) brightness(0.82);
   -webkit-backdrop-filter: blur(44px) saturate(140%) brightness(0.82);
+  backdrop-filter: blur(44px) saturate(140%) brightness(0.82);
   animation: launcher-in 0.42s var(--lui-ease) both;
 }
 @keyframes launcher-in {
@@ -984,8 +1004,8 @@ dialog.alert {
   border: 0;
   border-radius: 14px;
   background: var(--lui-menu);
-  backdrop-filter: blur(50px) saturate(190%);
-  -webkit-backdrop-filter: blur(50px) saturate(190%);
+  -webkit-backdrop-filter: blur(50px) saturate(130%);
+  backdrop-filter: blur(50px) saturate(130%);
   box-shadow: var(--lui-shadow-pop);
   color: var(--lui-ink);
   text-align: center;
@@ -1290,8 +1310,8 @@ dialog.alert::backdrop {
   gap: 3px;
   padding: 17px 10px 8px;
   border-radius: 7px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.14), transparent 60%), color-mix(in srgb, var(--lui-content) 86%, transparent);
-  backdrop-filter: blur(8px) saturate(160%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.14), transparent 60%), color-mix(in srgb, var(--lui-content) calc(var(--lui-glass) * 100%), transparent);
+  backdrop-filter: blur(8px) saturate(130%);
   box-shadow: var(--lui-window-inner), 0 6px 16px rgb(0 0 0 / 0.25);
   color: var(--lui-ink);
   font-family: var(--lui-font);
@@ -1461,10 +1481,12 @@ dialog.alert::backdrop {
 }
 
 /* Terminal */
+/* the console is always night: dark glass with faint scanlines, whatever the theme mode */
 .terminal {
   height: 100%;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--lui-content) 70%, #000);
+  /* clear glass like every window: faint scanlines only, and the theme's own ink */
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--lui-ink) 4%, transparent) 0 1px, transparent 1px 3px);
   color: var(--lui-ink);
   font: 12.5px/1.55 var(--lui-font-mono);
   overflow: auto;
@@ -1485,7 +1507,7 @@ dialog.alert::backdrop {
   caret-color: var(--lui-accent);
 }
 .terminal .err {
-  color: #ff7b72;
+  color: color-mix(in srgb, #e5484d 80%, var(--lui-ink));
 }
 
 /* Contact */
@@ -1662,8 +1684,8 @@ dialog.alert::backdrop {
   border: 0;
   border-radius: 22px;
   background: rgb(255 255 255 / 0.22);
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(130%);
+  backdrop-filter: blur(30px) saturate(130%);
   color: #fff;
   box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.3);
 }
@@ -1698,8 +1720,8 @@ dialog.alert::backdrop {
   padding: 10px;
   border-radius: 30px;
   background: rgb(255 255 255 / 0.22);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(130%);
+  backdrop-filter: blur(40px) saturate(130%);
   box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.3);
 }
 .m-dock .icon svg {
@@ -1839,8 +1861,8 @@ dialog.alert::backdrop {
   padding: 14px;
   border-radius: 24px;
   background: var(--lui-menu);
-  backdrop-filter: blur(50px) saturate(190%);
-  -webkit-backdrop-filter: blur(50px) saturate(190%);
+  -webkit-backdrop-filter: blur(50px) saturate(130%);
+  backdrop-filter: blur(50px) saturate(130%);
   box-shadow: var(--lui-shadow-pop);
   color: var(--lui-ink);
   animation: shade 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -1938,7 +1960,7 @@ dialog.alert::backdrop {
   gap: 2px;
   border-radius: 18px;
   background: var(--lui-menu);
-  backdrop-filter: blur(50px) saturate(190%);
+  backdrop-filter: blur(50px) saturate(130%);
   box-shadow: var(--lui-shadow-pop);
   color: var(--lui-ink);
   animation: rise 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -1999,8 +2021,8 @@ dialog.alert::backdrop {
   flex: none;
   padding: 12px 14px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--lui-content) 50%, transparent);
-  box-shadow: var(--lui-rim), inset 0 0 0 0.5px var(--lui-sep);
+  background: color-mix(in srgb, var(--lui-content) 30%, transparent);
+  box-shadow: var(--lui-rim);
   animation: nc-card 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 .nc-card:nth-child(2) {
@@ -2054,7 +2076,7 @@ dialog.alert::backdrop {
   padding: 10px;
   border: 0;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--lui-content) 60%, transparent);
+  background: color-mix(in srgb, var(--lui-content) 30%, transparent);
   box-shadow: inset 0 0 0 0.5px var(--lui-sep);
   animation-delay: calc(var(--i, 0) * 0.04s);
 }
@@ -2070,8 +2092,8 @@ dialog.alert::backdrop {
   padding: 16px 18px 12px;
   border-radius: 22px;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.03)), var(--lui-menu);
-  backdrop-filter: blur(var(--lui-blur)) saturate(190%);
-  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
   box-shadow: var(--lui-rim), var(--lui-shadow-pop);
   color: var(--lui-ink);
   font-size: 12.5px;
@@ -2209,6 +2231,55 @@ dialog.alert::backdrop {
 }
 .settings > .lui-button {
   margin-top: 12px;
+}
+
+/* ---- LupinOS shapes for the site's own panels ------------------------------------------------- */
+
+.cc,
+.ws-hud,
+.sheet,
+.switcher,
+dialog.alert {
+  border-radius: var(--lui-shape);
+}
+.cc > *,
+.cc-tile,
+.cc-more,
+.nc-card,
+.nc-notes .cc-note,
+.set-group,
+.theme-preview,
+.wall-tile,
+.text-sample,
+.launcher-search {
+  border-radius: 12px 4px 12px 4px;
+}
+@supports (corner-shape: bevel) {
+  .cc,
+  .ws-hud,
+  .sheet,
+  .switcher,
+  dialog.alert,
+  .cc > *,
+  .cc-tile,
+  .cc-more,
+  .nc-card,
+  .nc-notes .cc-note,
+  .set-group,
+  .theme-preview,
+  .wall-tile,
+  .text-sample,
+  .launcher-search {
+    corner-shape: bevel round bevel round;
+  }
+}
+.clock-capsule b {
+  font: 600 12px var(--lui-font-mono);
+  letter-spacing: 0.02em;
+}
+.user-menu svg {
+  width: 18px;
+  height: 18px;
 }
 
 @media (prefers-reduced-motion: reduce) {

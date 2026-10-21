@@ -1,0 +1,57 @@
+# Render Blueprint: the static site and the API. Sync it from the Render dashboard.
+# No secrets live here: Render generates SESSION_SECRET and OWNER_KEY, and asks for the rest.
+# Free web services sleep after 15 minutes; LupinOS never waits for the API, so that is fine.
+# Free Render Postgres expires after 30 days, so point DATABASE_URL at a paid or external
+# Postgres. Without DATABASE_URL the API keeps everything in memory until it restarts.
+services:
+  - type: web
+    name: lupinos-site
+    runtime: static
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: apps/site/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: PUBLIC_API_URL
+        fromService:
+          type: web
+          name: lupinos-api
+          property: host
+    headers:
+      - path: /_astro/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+
+  - type: web
+    name: lupinos-api
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter @lupinos/server
+    startCommand: node apps/server/src/index.ts
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - apps/server/**
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: OWNER_KEY
+        generateValue: true
+      - key: SITE_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false

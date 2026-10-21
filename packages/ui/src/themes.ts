@@ -107,5 +107,5 @@ export const isThemeId = (v: unknown): v is ThemeId => typeof v === "string" && 
 
 /** A Google Fonts stylesheet URL that loads every theme's typeface. Optional: put it in a <link>. */
 export const themeFontsHref = `https://fonts.googleapis.com/css2?${[...new Set(themeList.map((t) => t.font))]
-  .map((f) => `family=${f.replace(/ /g, "+")}:wght@300;400;500;600;700`)
+  .map((f) => `family=${f.replace(/ /g, "+")}:wght@400;500;700`)
   .join("&")}&display=swap`;

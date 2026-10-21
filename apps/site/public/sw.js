@@ -1,7 +1,7 @@
 // LupinOS service worker. Pages are network-first so new builds show up; everything else
 // (hashed scripts, styles, fonts, icons) is cache-first. After one visit the OS works offline.
-const CACHE = "lupinos-v1";
-const SHELL = ["/", "/plain", "/favicon.svg", "/resume.pdf"];
+const CACHE = "lupinos-v2";
+const SHELL = ["/", "/plain", "/favicon.svg?v=2", "/apple-touch-icon.png", "/resume.pdf"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

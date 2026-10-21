@@ -9,6 +9,8 @@ import { Desktop } from "./Desktop";
 import { Mobile } from "./Mobile";
 import { Overlays } from "./Overlays";
 import { Boot, Greeting, Off, Panic, PhoneLock, Saver, UserPicker } from "./Power";
+import { moment, startFun } from "./fun";
+import { startVisitLog } from "./net";
 import * as os from "./store";
 import { pathOf } from "./vfs";
 import { DesktopWallpaper } from "./Wallpaper";
@@ -53,6 +55,7 @@ export default function OS() {
   const power = os.useOS((s) => s.power);
   const hydrated = os.useOS((s) => s.hydrated);
   const fx = os.useOS((s) => s.fx);
+  const akira = os.useOS((s) => s.akira);
   const current = os.useOS((s) => s.current);
   const lastUser = os.useOS((s) => s.lastUser);
   const sessions = os.useOS((s) => s.sessions);
@@ -103,6 +106,13 @@ export default function OS() {
     };
   }, [power]);
 
+  // Once someone reaches the desktop, the visit log starts (when an API is configured).
+  useEffect(() => {
+    if (power !== "desktop") return;
+    startVisitLog({ device: shell, theme: settings.theme });
+    startFun();
+  }, [power, shell, settings.theme]);
+
   // The address bar follows the focused window, so any window can be shared as a link.
   const top = os.topWindow(sess);
   useEffect(() => {
@@ -121,7 +131,7 @@ export default function OS() {
 
   let screen: ReactNode;
   if (power === "boot") screen = <Boot onDone={() => os.setPower("welcome")} />;
-  else if (power === "welcome") screen = <Greeting user={autoUser()} onDone={signIn} />;
+  else if (power === "welcome") screen = <Greeting user={autoUser()} settings={settings} mode={effectiveMode(settings)} onDone={signIn} />;
   else if (power === "off") screen = <Off />;
   else if (power === "panic") screen = <Panic />;
   else if (power === "lock" || !sess || !user)
@@ -144,6 +154,8 @@ export default function OS() {
       data-shell={shell}
       data-icons={settings.iconSize}
       data-cursor={settings.plainCursor ? "plain" : undefined}
+      data-akira={akira || undefined}
+      data-moment={moment() ?? undefined}
       lang={settings.lang}
       // Settings knobs go straight onto the package tokens, so every window and panel follows.
       style={
@@ -155,6 +167,7 @@ export default function OS() {
           "--lui-blur": `${settings.blur}px`,
           "--lui-shadow-k": settings.shadow,
           "--lui-r-window": `${settings.radius}px`,
+          "--dock-space": `${settings.dockSize + 28}px`,
         } as CSSProperties
       }
     >

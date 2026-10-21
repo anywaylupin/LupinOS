@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { owner, projects } from "../content/owner";
 import { effectiveMode, openNode } from "../os/actions";
 import { apps } from "../os/apps";
+import { emit } from "../os/bus";
 import * as os from "../os/store";
 import { type ThemeId, themes } from "@lupinos/ui";
 import { children, HOME, pathOf, resolve } from "../os/vfs";
@@ -10,7 +11,7 @@ import { aboutText } from "./About";
 
 type Out = { text: string; cls?: string };
 
-const COMMANDS = ["help", "ls", "cd", "cat", "open", "clear", "pwd", "whoami", "neofetch", "beesay", "theme", "sudo", "rm", "matrix", "hire"];
+const COMMANDS = ["help", "ls", "cd", "cat", "open", "clear", "pwd", "whoami", "neofetch", "beesay", "theme", "sudo", "rm", "matrix", "hire", "ssh", "exit"];
 
 const HELP = `Commands
   ls [path]        list a folder (ls -a shows hidden files)
@@ -145,10 +146,22 @@ export default function Terminal({ win }: { win: os.Win }) {
         return err(`theme: ${arg}: not installed`);
       }
       case "sudo":
+        if (arg === "make me a sandwich") {
+          emit({ type: "egg", id: "sandwich" });
+          return [{ text: "Okay. A sandwich has been dispatched to your desk by drone." }];
+        }
         return err("This incident will be reported to the hive.");
+      case "ssh":
+        if (arg === "hive") return [{ text: "Connecting to hive.lupinos...\nWelcome, drone 4471. Your quota today: 3 honey, 0 questions." }];
+        return err(`ssh: ${arg || "host"}: connection refused by corporate policy`);
+      case "exit":
+        os.playFx("crt", 700);
+        setTimeout(() => setOut((o) => [...o, { text: "Just kidding. Nobody leaves the internet." }]), 900);
+        return [{ text: "Logging you out of the internet..." }];
       case "rm":
         if (/-rf?\s+\/$/.test(arg) || arg === "-rf /") {
           os.playFx("meltdown", 1800);
+          emit({ type: "egg", id: "meltdown" });
           setTimeout(() => setOut((o) => [...o, { text: "Just kidding. The hive restored everything. Please do not do that again." }]), 1900);
           return err("Deleting everything... the hive is screaming...");
         }

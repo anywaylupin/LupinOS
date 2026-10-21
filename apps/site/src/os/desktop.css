@@ -1,0 +1,969 @@
+/* Desktop extras: widgets and their gallery, the Music app, and the desktop hero. */
+
+/* ---- widgets ------------------------------------------------------------------------------------ */
+
+.widgets {
+  position: absolute;
+  inset: 26px 0 0 0;
+  pointer-events: none;
+}
+.widget {
+  position: absolute;
+  width: 176px;
+  padding: 10px 12px 12px;
+  border-radius: 14px 5px 14px 5px;
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.03)), color-mix(in srgb, var(--lui-content) calc(var(--lui-glass) * 72%), transparent);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  box-shadow: var(--lui-rim), 0 10px 30px -12px rgb(0 0 0 / calc(0.35 * var(--lui-shadow-k)));
+  color: var(--lui-ink);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  transition: translate 0.4s var(--lui-spring), left 0.4s var(--lui-spring), top 0.4s var(--lui-spring), width 0.35s var(--lui-ease);
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s backwards;
+}
+.widget[data-big] {
+  width: 300px;
+}
+.widget[data-dragging] {
+  z-index: 2;
+  transition: none;
+  box-shadow: var(--lui-rim), 0 20px 40px -12px rgb(0 0 0 / 0.4);
+}
+.widget > header {
+  margin-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lui-muted);
+}
+.widget > header::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  background: var(--lui-accent);
+  transform: rotate(45deg);
+}
+.clock-tile,
+.fortune-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+.clock-tile svg {
+  width: 74px;
+  height: 74px;
+  flex: none;
+}
+.widget[data-big] .clock-tile svg {
+  width: 120px;
+  height: 120px;
+}
+.clock-tile .face {
+  fill: color-mix(in srgb, var(--lui-content) 60%, transparent);
+  stroke: color-mix(in srgb, var(--lui-ink) 18%, transparent);
+}
+.clock-tile .tick {
+  stroke: var(--lui-ink);
+  stroke-width: 1.6;
+  opacity: 0.55;
+}
+.clock-tile .hand {
+  stroke: var(--lui-ink);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  transform-origin: 50px 50px;
+  transform-box: view-box;
+}
+.clock-tile .hand.thin {
+  stroke-width: 2;
+}
+.clock-tile .hand.sec {
+  stroke: var(--lui-accent);
+  stroke-width: 1.2;
+}
+.clock-tile .pin {
+  fill: var(--lui-accent);
+}
+.clock-tile b {
+  display: block;
+  font: 600 15px var(--lui-font-mono);
+}
+.clock-tile small,
+.weather-tile small,
+.music-tile small,
+.counter-tile small,
+.date-tile small,
+.fortune-tile small {
+  display: block;
+  color: var(--lui-muted);
+  font-size: 11px;
+}
+.weather-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.weather-now b {
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.weather-now strong {
+  display: block;
+  font-size: 12.5px;
+}
+.omen {
+  margin: 6px 0 4px;
+  font: 600 11px var(--lui-font-mono);
+  color: var(--lui-accent);
+}
+.weather-tile .lui-button {
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11.5px;
+}
+.weather-tile .credit {
+  font-size: 10px;
+  color: var(--lui-muted);
+}
+.note-tile {
+  width: 100%;
+  min-height: 74px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: #3a2f12;
+  font: 13px / 1.4 var(--lui-font);
+  user-select: text;
+}
+.widget[data-kind="note"] {
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05)), color-mix(in srgb, #f6d77a calc(var(--lui-glass) * 80%), transparent);
+  color: #3a2f12;
+}
+.widget[data-kind="note"] > header {
+  color: rgb(58 47 18 / 0.6);
+}
+.music-tile {
+  display: grid;
+  gap: 6px;
+}
+.music-tile strong {
+  display: block;
+  font-size: 12.5px;
+}
+.monitor-tile > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.monitor-tile b {
+  font: 600 24px var(--lui-font-mono);
+}
+.monitor-tile small {
+  color: var(--lui-muted);
+  font-size: 11px;
+}
+.monitor-tile svg {
+  width: 100%;
+  height: 44px;
+  margin: 4px 0;
+}
+.monitor-tile polyline {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.monitor-tile polyline.cpu {
+  stroke: var(--lui-accent);
+}
+.monitor-tile polyline.honey {
+  stroke: #e9a93a;
+}
+.monitor-legend {
+  display: flex;
+  justify-content: space-between;
+  font: 600 10.5px var(--lui-font-mono);
+}
+.monitor-legend .cpu {
+  color: var(--lui-accent);
+}
+.monitor-legend .honey {
+  color: #c98a1c;
+}
+.focus-tile b {
+  display: block;
+  font: 600 30px var(--lui-font-mono);
+  letter-spacing: 0.02em;
+}
+.focus-tile > div {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.fortune-tile {
+  display: block;
+}
+.fortune-tile q {
+  display: block;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.odometer {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.odometer span {
+  flex: 1;
+  padding: 4px 0;
+  border-radius: 4px 1px 4px 1px;
+  background: rgb(12 11 16 / 0.86);
+  color: #f2c14e;
+  font: 600 18px var(--lui-font-mono);
+  text-align: center;
+}
+.date-tile b {
+  display: block;
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--lui-accent);
+}
+.widget[data-kind="calendar"][data-big] .lui-calendar-day {
+  min-height: 30px;
+}
+
+/* the widget gallery */
+.gallery {
+  width: min(640px, 92vw);
+}
+.gallery > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.gallery-item {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 12px;
+  border-radius: 12px 4px 12px 4px;
+  background: var(--lui-hover);
+}
+.gallery-item p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--lui-muted);
+}
+.gallery-item .lui-button {
+  justify-self: start;
+}
+
+/* ---- music -------------------------------------------------------------------------------------- */
+
+.music {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(200px, 1fr);
+  height: 100%;
+}
+.music-deck {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px;
+  background: radial-gradient(90% 70% at 50% 30%, color-mix(in srgb, var(--lui-accent) 18%, transparent), transparent 70%);
+}
+.record {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #141218 0 2px, #1d1a22 2px 4px);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+  display: grid;
+  place-items: center;
+}
+.record span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: conic-gradient(var(--lui-accent) 0 25%, var(--lui-i2) 0 50%, var(--lui-accent) 0 75%, var(--lui-i2) 0);
+  box-shadow: 0 0 0 4px #141218;
+}
+.record[data-spinning] {
+  animation: spin 2.4s linear infinite;
+}
+.music-now {
+  text-align: center;
+}
+.music-now strong {
+  display: block;
+  font-size: 15px;
+}
+.music-now small {
+  color: var(--lui-muted);
+}
+.music-progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--lui-hover);
+}
+.music-progress i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--p);
+  border-radius: inherit;
+  background: var(--lui-accent);
+  transition: width 0.9s linear;
+}
+.music-progress span {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  font: 500 10.5px var(--lui-font-mono);
+  color: var(--lui-muted);
+}
+.music-deck .music-progress {
+  margin-bottom: 14px;
+}
+.music-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.music-play {
+  width: 40px;
+  height: 30px;
+  font-size: 12px;
+}
+.viz {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  width: 100%;
+  height: 46px;
+}
+.viz.small {
+  height: 22px;
+  gap: 2px;
+}
+.viz i {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(0deg, var(--lui-accent), color-mix(in srgb, var(--lui-accent) 40%, #fff));
+  transform-origin: bottom;
+  scale: 1 0.08;
+}
+.music-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.music-volume input {
+  flex: 1;
+  accent-color: var(--lui-accent);
+}
+.playlist {
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+  overflow: auto;
+  border-left: 0.5px solid var(--lui-sep);
+}
+.playlist button {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  grid-template-rows: auto auto;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px 3px 10px 3px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+.playlist button:hover {
+  background: var(--lui-hover);
+}
+.playlist button[aria-current] {
+  background: color-mix(in srgb, var(--lui-accent) 16%, transparent);
+}
+.playlist span {
+  grid-row: span 2;
+  align-self: center;
+  font: 600 11px var(--lui-font-mono);
+  color: var(--lui-accent);
+}
+.playlist small {
+  grid-column: 2;
+  color: var(--lui-muted);
+  font-size: 11.5px;
+}
+.playlist time {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  align-self: center;
+  font: 500 11px var(--lui-font-mono);
+  color: var(--lui-muted);
+}
+
+/* ---- desktop hero ------------------------------------------------------------------------------- */
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.hero-hit {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+.hero-hit:focus-visible {
+  outline: 2px solid var(--lui-accent);
+  outline-offset: 2px;
+}
+.hero-bubble {
+  position: absolute;
+  z-index: 3;
+  max-width: 220px;
+  padding: 8px 12px;
+  border-radius: 12px 4px 12px 4px;
+  background: var(--lui-menu);
+  box-shadow: var(--lui-rim), var(--lui-shadow-menu);
+  color: var(--lui-ink);
+  font-size: 12.5px;
+  translate: -50% -100%;
+  pointer-events: none;
+  animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-sheet {
+  padding: 4px 22px 22px;
+}
+.hero-sheet header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 6px 0 10px;
+}
+.hero-sheet header small {
+  display: block;
+  font-size: 11px;
+  color: var(--lui-muted);
+}
+.hero-sheet header b {
+  font: 600 24px var(--lui-font-mono);
+}
+.hero-sheet .xp {
+  position: relative;
+  flex: 1;
+  height: 12px;
+  border-radius: 99px;
+  background: var(--lui-hover);
+}
+.hero-sheet .xp i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--p);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--lui-accent), #f2c14e);
+}
+.hero-sheet .xp span {
+  position: absolute;
+  top: 14px;
+  right: 0;
+  font: 500 10.5px var(--lui-font-mono);
+  color: var(--lui-muted);
+}
+.hero-sheet h3 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+}
+.hero-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 6px;
+}
+.hero-item {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px 3px 10px 3px;
+  background: var(--lui-hover);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+.hero-item:disabled {
+  opacity: 0.45;
+}
+.hero-item[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--lui-accent) 20%, transparent);
+  box-shadow: inset 0 0 0 1px var(--lui-accent);
+}
+.hero-item small {
+  color: var(--lui-muted);
+  font-size: 11px;
+}
+.hero-sheet .set-group {
+  margin-top: 16px;
+}
+@supports (corner-shape: bevel) {
+  .widget,
+  .gallery-item,
+  .playlist button,
+  .hero-bubble,
+  .hero-item,
+  .odometer span {
+    corner-shape: bevel round bevel round;
+  }
+}
+
+/* ---- guestbook, leaderboards, privacy ----------------------------------------------------------- */
+
+.guestbook {
+  display: grid;
+  gap: 14px;
+  padding: 16px 20px 20px;
+}
+.guest-form {
+  display: grid;
+  gap: 8px;
+}
+.guest-form .lui-field {
+  width: 100%;
+}
+.guest-form textarea.lui-field {
+  height: auto;
+  padding: 8px 10px;
+  resize: vertical;
+  font: inherit;
+}
+.guest-form .row {
+  justify-content: space-between;
+  align-items: center;
+}
+.guest-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guest-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  border-radius: 12px 4px 12px 4px;
+  background: var(--lui-hover);
+  animation: rise 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.guest-list time {
+  font: 500 11px var(--lui-font-mono);
+  color: var(--lui-muted);
+}
+.guest-list p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.board {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+.board ol {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+  counter-reset: rank;
+}
+.board li {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px 2px 6px 2px;
+  background: color-mix(in srgb, var(--lui-content) 30%, transparent);
+  font-size: 12.5px;
+  counter-increment: rank;
+}
+.board li::before {
+  content: counter(rank, decimal-leading-zero);
+  font: 600 11px var(--lui-font-mono);
+  color: var(--lui-accent);
+}
+.board li b {
+  margin-left: auto;
+  font: 600 12px var(--lui-font-mono);
+}
+.board li.board-note::before {
+  content: none;
+}
+.board-note {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--lui-muted);
+}
+.privacy {
+  margin-top: 6px;
+  text-align: left;
+}
+.privacy > p {
+  margin: 0;
+  padding: 0 14px 12px;
+  font-size: 12px;
+}
+
+/* ---- the fun layer ------------------------------------------------------------------------------ */
+
+/* Akira mode: red and black, speed lines on the wallpaper, windows slide in like a bike */
+.os[data-akira] {
+  --lui-accent: #e5302a;
+  --lui-on-accent: #fff;
+  --lui-wall: linear-gradient(160deg, #1a0606 0%, #3b0a0a 45%, #0b0b0d 100%);
+}
+.os[data-akira] .lui-wallpaper::after {
+  background: repeating-linear-gradient(176deg, transparent 0 22px, rgb(229 48 42 / 0.16) 22px 24px, transparent 24px 60px);
+  background-size: 200% 100%;
+  animation: speed-lines 0.9s linear infinite;
+}
+.os[data-akira] .lui-window {
+  animation: akira-slide 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+@keyframes speed-lines {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes akira-slide {
+  from {
+    translate: -60px 0;
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+/* the tired window sags and yawns until clicked */
+.lui-window[data-tired] {
+  transform-origin: top left;
+  animation: sag 4s ease-in-out forwards, yawn 3s ease-in-out 4s infinite;
+}
+@keyframes sag {
+  to {
+    rotate: 1.4deg;
+    translate: 0 8px;
+  }
+}
+@keyframes yawn {
+  0%,
+  100% {
+    rotate: 1.4deg;
+    translate: 0 8px;
+  }
+  50% {
+    rotate: 1.6deg;
+    translate: 0 8px;
+    scale: 1.01 0.985;
+  }
+}
+
+/* the helper bee */
+.helper-bee {
+  position: fixed;
+  right: 18px;
+  bottom: 96px;
+  z-index: 8850;
+  display: flex;
+  gap: 12px;
+  width: min(360px, calc(100vw - 36px));
+  padding: 14px 40px 14px 14px;
+  border-radius: 16px 5px 16px 5px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.02)), var(--lui-menu);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-pop);
+  color: var(--lui-ink);
+  animation: bee-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.helper-bee > svg {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  animation: bob 1.6s ease-in-out infinite;
+}
+.helper-bee p {
+  margin: 2px 0 8px;
+  font-size: 12.5px;
+  color: var(--lui-muted);
+}
+.helper-bee .row {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.helper-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+@keyframes bee-in {
+  from {
+    opacity: 0;
+    translate: 40px 20px;
+    rotate: 6deg;
+  }
+}
+
+/* swapping dialog buttons, once */
+.alert-actions[data-swapped] {
+  flex-direction: row-reverse;
+}
+.alert-actions .lui-button {
+  transition: translate 0.3s var(--lui-spring);
+}
+
+/* the fake update on restart */
+.boot-update {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  font: 13px var(--lui-font-mono);
+  color: rgb(255 255 255 / 0.7);
+  animation: fade 0.4s both;
+}
+.boot-update p {
+  margin: 0;
+}
+.boot-update .lui-button {
+  color: #fff;
+}
+
+/* achievements: holographic cards */
+.badges {
+  padding: 4px 22px 22px;
+}
+.badges h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.badges header p {
+  margin: 2px 0 14px;
+  font-size: 12px;
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.badge {
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-height: 110px;
+  padding: 12px;
+  overflow: hidden;
+  border-radius: 14px 5px 14px 5px;
+  background: var(--lui-hover);
+  box-shadow: inset 0 0 0 0.5px var(--lui-sep);
+  opacity: 0.6;
+  animation: rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 0.03s);
+}
+.badge[data-got] {
+  opacity: 1;
+  background:
+    radial-gradient(120px circle at var(--mx) var(--my), rgb(255 255 255 / 0.45), transparent 60%),
+    conic-gradient(from 200deg at var(--mx) var(--my), #ff8fd8, #8fd3ff, #b0ffb0, #ffe28f, #ff8fd8),
+    var(--lui-content);
+  background-blend-mode: soft-light, normal, normal;
+  color: #1d1a22;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.5), 0 10px 26px -14px rgb(0 0 0 / 0.5);
+}
+.badge-mark {
+  font: 700 22px var(--lui-font-mono);
+  color: var(--lui-accent);
+}
+.badge[data-got] .badge-mark {
+  color: #1d1a22;
+}
+.badge small {
+  font-size: 11.5px;
+  opacity: 0.75;
+}
+
+/* calendar moments */
+.os[data-moment="lantern"] .lui-menubar-center::before {
+  content: "";
+  width: 10px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 5px;
+  background: radial-gradient(circle at 50% 40%, #ffd36b, #e5302a 70%);
+  box-shadow: 0 0 10px rgb(229 48 42 / 0.7);
+  animation: bob 2s ease-in-out infinite;
+}
+.os[data-moment="birthday"] .lui-menubar-center::after {
+  content: "Birthday build";
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 6px 2px 6px 2px;
+  background: var(--lui-accent);
+  color: var(--lui-on-accent);
+  font: 600 10.5px var(--lui-font-mono);
+  letter-spacing: 0.04em;
+}
+@supports (corner-shape: bevel) {
+  .helper-bee,
+  .badge {
+    corner-shape: bevel round bevel round;
+  }
+}
+
+/* ---- window modes ------------------------------------------------------------------------------- */
+
+/* Chain: the desktop slides along the strip */
+.ws-strip[data-wm="chain"] .ws {
+  transition: translate 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chain-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3900;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  translate: 0 -50%;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.06)), var(--lui-menu);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-menu);
+  color: var(--lui-ink);
+  cursor: default;
+  animation: fade 0.3s both;
+  transition: scale 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chain-arrow:hover {
+  scale: 1.08;
+}
+.chain-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+.chain-arrow[data-side="left"] {
+  left: 14px;
+}
+.chain-arrow[data-side="right"] {
+  right: 14px;
+}
+.chain-map {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--dock-space, 78px) + 10px);
+  z-index: 3900;
+  height: 30px;
+  translate: -50% 0;
+  padding: 0 6px;
+  border-radius: 12px 4px 12px 4px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04)), color-mix(in srgb, var(--lui-ink) 30%, transparent);
+  -webkit-backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  backdrop-filter: blur(var(--lui-blur)) saturate(130%);
+  box-shadow: var(--lui-rim), var(--lui-shadow-menu);
+  box-sizing: content-box;
+  animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.chain-map button {
+  position: absolute;
+  top: 6px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.55);
+  cursor: default;
+  transition: background 0.2s, left 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chain-map button[aria-current] {
+  background: var(--lui-accent);
+}
+.chain-map i {
+  position: absolute;
+  top: 3px;
+  height: 24px;
+  margin-left: 6px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 1.5px #fff;
+  pointer-events: none;
+  transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@supports (corner-shape: bevel) {
+  .chain-map {
+    corner-shape: bevel round bevel round;
+  }
+}
+
+/* ---- liquid glass (plasma-ui) -------------------------------------------------------------------- */
+
+/* the canvas sits just above the wallpaper; outside its surfaces it is clear */
+.liquid-canvas {
+  pointer-events: none;
+}
+.liquid-plate {
+  position: fixed;
+  pointer-events: none;
+}
+/* chrome on a plasma surface drops its CSS glass: the liquid is its glass */
+.desktop[data-liquid] .lui-menubar,
+.desktop[data-liquid] .lui-dock,
+.desktop[data-liquid] .widget {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.desktop[data-liquid] .widget[data-kind="note"] {
+  background: none;
+}

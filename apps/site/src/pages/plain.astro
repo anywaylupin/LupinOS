@@ -12,7 +12,8 @@ const { resume } = owner;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{owner.name}, {owner.role} · Portfolio</title>
     <meta name="description" content={`${owner.name}, ${owner.role}. Projects, resume and contact.`} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:image" content="/og/plain.png" />
+    <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
     <style>
       :root {
         --bg: #fbfaf6;
@@ -146,6 +147,8 @@ const { resume } = owner;
 
       <p class="muted" style="margin-top:48px;font-size:14px">
         Privacy: this site sets no cookies. Profiles, files and wallpapers you make in LupinOS stay in your browser.
+        When the visit log is switched on, the site tells its owner about a visit: the country, the device type and which
+        apps were opened. The full IP address is never stored, and Global Privacy Control turns it into an anonymous count.
       </p>
     </main>
   </body>

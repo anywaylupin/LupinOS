@@ -6,7 +6,10 @@ import { commands, openNode, shortcuts } from "./actions";
 import { apps } from "./apps";
 import * as os from "./store";
 import { nodeIcon, rectOf } from "./ui";
+import { useT } from "./i18n";
 import { pathOf } from "./vfs";
+import { WidgetGallery } from "./Widgets";
+import { dialogSwaps } from "./fun";
 
 function Search() {
   const sess = os.useSession();
@@ -119,6 +122,7 @@ function Switcher() {
 }
 
 function Launcher() {
+  const t = useT();
   const [q, setQ] = useState("");
   const list = Object.values(apps).filter((a) => !a.hidden && a.name.toLowerCase().includes(q.toLowerCase()));
   return (
@@ -128,8 +132,8 @@ function Launcher() {
         className="lui-field launcher-search"
         // biome-ignore lint/a11y/noAutofocus: typing filters the apps straight away
         autoFocus
-        placeholder="Search"
-        aria-label="Search apps"
+        placeholder={t("Search")}
+        aria-label={t("Search")}
         value={q}
         onChange={(e) => setQ(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && list[0] && (os.setOverlay(null), os.open(list[0].id))}
@@ -147,11 +151,45 @@ function Launcher() {
             }}
           >
             <AppIcon name={a.icon} />
-            <span>{a.name}</span>
+            <span>{t(a.name)}</span>
           </button>
         ))}
       </div>
     </div>
+  );
+}
+
+/** The helper bee prank: a pop-up offer of help. Close it, or never see it again. */
+function HelperBee() {
+  const close = () => os.useOS.setState({ prank: null });
+  return (
+    <aside className="helper-bee" role="dialog" aria-label="Helper bee">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <ellipse cx="24" cy="28" rx="13" ry="10" fill="#f5c542" />
+        <path d="M19 19v18M27 19v18" stroke="#1f1a14" strokeWidth="4" />
+        <ellipse cx="17" cy="15" rx="7" ry="5" fill="rgb(255 255 255 / 0.8)" />
+        <ellipse cx="30" cy="15" rx="7" ry="5" fill="rgb(255 255 255 / 0.8)" />
+        <circle cx="34" cy="26" r="2" fill="#1f1a14" />
+      </svg>
+      <div>
+        <strong>It looks like you are hiring.</strong>
+        <p>Need help? I can open the resume or the contact form.</p>
+        <div className="row">
+          <button type="button" className="lui-button" data-variant="primary" onClick={() => (close(), os.open("resume"))}>
+            Show the resume
+          </button>
+          <button type="button" className="lui-button" onClick={() => (close(), os.open("contact"))}>
+            Contact
+          </button>
+          <button type="button" className="lui-button" data-variant="plain" onClick={() => (close(), os.setSettings({ serious: true }))}>
+            Never show again
+          </button>
+        </div>
+      </div>
+      <button type="button" className="lui-button helper-close" data-variant="plain" data-icon aria-label="Close" onClick={close}>
+        <UiIcon name="close" />
+      </button>
+    </aside>
   );
 }
 
@@ -169,9 +207,15 @@ function Notifications() {
 function Dialog() {
   const dialog = os.useOS((s) => s.dialog);
   const ref = useRef<HTMLDialogElement>(null);
+  const [swapped, setSwapped] = useState(false);
   useEffect(() => {
     const d = ref.current;
     if (dialog && d && !d.open) d.showModal();
+    // A prank, once per visitor: the buttons trade places. Escape still closes it.
+    setSwapped(false);
+    if (!dialog || !dialogSwaps()) return;
+    const t = setTimeout(() => setSwapped(true), 700);
+    return () => clearTimeout(t);
   }, [dialog]);
   if (!dialog) return null;
   return (
@@ -179,7 +223,7 @@ function Dialog() {
       <AppIcon name="settings" className="alert-icon" />
       <h2 id="alert-title">{dialog.title}</h2>
       <p>{dialog.body}</p>
-      <div className="alert-actions">
+      <div className="alert-actions" data-swapped={swapped || undefined}>
         <button type="button" className="lui-button" onClick={os.closeDialog}>
           Cancel
         </button>
@@ -232,12 +276,15 @@ function GlyphRain() {
 export function Overlays() {
   const overlay = os.useOS((s) => s.overlay);
   const fx = os.useOS((s) => s.fx);
+  const prank = os.useOS((s) => s.prank);
   return (
     <>
+      {prank === "helper-bee" && <HelperBee />}
       <Search />
       {overlay === "shortcuts" && <Shortcuts />}
       {overlay === "switcher" && <Switcher />}
       {overlay === "launcher" && <Launcher />}
+      {overlay === "widgets" && <WidgetGallery />}
       {fx === "matrix" && <GlyphRain />}
       <Notifications />
       <Dialog />

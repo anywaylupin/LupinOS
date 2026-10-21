@@ -24,6 +24,6 @@ export function getStaticPaths() {
 const { title, description } = Astro.props;
 ---
 
-<Base title={`${title} · LupinOS · ${owner.name}`} description={description}>
+<Base title={`${title} · LupinOS · ${owner.name}`} description={description} image={`/og/${Astro.params.path.replaceAll("/", "-")}.png`}>
   <OS client:only="react" />
 </Base>

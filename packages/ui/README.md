@@ -1,6 +1,6 @@
 # @lupinos/ui
 
-Desktop components for React that look and move like a real operating system: a window manager with snapping and momentum, a magnifying dock, a menu bar, context menus, a Spotlight-style command palette, notification banners, two icon sets and seven themes.
+Desktop components for React that look and move like a real operating system: a window manager with snapping and momentum, a dock you can reorder, a menu bar, context menus, a Spotlight-style command palette, a side drawer, a calendar with lunar dates, notification banners, two icon sets and seven themes.
 
 This is the component library behind LupinOS, a portfolio built as a made-up desktop OS.
 
@@ -50,17 +50,31 @@ Everything renders inside `LupinRoot`, which sets the theme and mode. Menus and 
 
 Seven themes run red through pink. Each blends three or four colours and works in light and dark mode.
 
-| Theme | Colour | Mood |
-| --- | --- | --- |
-| `kova` | Garnet | Akira × cyberpunk |
-| `tazu` | Kiln | Wukong × anime |
-| `mimo` | Pollen | Bee × anime |
-| `olvi` | Moss | Wukong × hanyu |
-| `lisen` | Glacier | Far future × Akira |
-| `yune` | Dusk Iris | Cyberpunk × anime |
-| `peli` | Peony | Anime × hanyu |
+| Theme | Colour | Mood | Font |
+| --- | --- | --- | --- |
+| `kova` | Garnet | Akira × cyberpunk | Space Grotesk |
+| `tazu` | Kiln | Wukong × anime | Lexend |
+| `mimo` | Pollen | Bee × anime | M PLUS Rounded 1c |
+| `olvi` | Moss | Wukong × hanyu | Outfit |
+| `lisen` | Glacier | Far future × Akira | Sora |
+| `yune` | Dusk Iris | Cyberpunk × anime | Chakra Petch |
+| `peli` | Peony | Anime × hanyu | Zen Maru Gothic |
 
-`themeList` gives you `{ id, name, hue, mood, mode, wallpaper, swatches }` for each, for pickers and previews.
+`themeList` gives you `{ id, name, hue, mood, mode, font, wallpaper, swatches }` for each, for pickers and previews. Load the fonts with one stylesheet: `<link rel="stylesheet" href={themeFontsHref} />`.
+
+### Knobs
+
+Set these on `LupinRoot` with `style` to let people tune the look:
+
+| Variable | Default | What it changes |
+| --- | --- | --- |
+| `--lui-glass` | `0.86` | Window opacity, from clear glass (0.4) to solid (1). |
+| `--lui-blur` | `40px` | Backdrop blur behind windows, menus and the dock. |
+| `--lui-shadow-k` | `1` | Shadow strength. 0 turns shadows off. |
+| `--lui-r-window` | `14px` | Window corner radius. |
+| `--lui-text-scale` | `1` | Zooms window content and the drawer. |
+| `--lui-font-face` | theme font | Overrides the font everywhere. |
+| `--lui-ink` | per mode | Text colour. |
 
 Every component reads only `--lui-*` CSS variables, so you can make your own theme by setting them on `.lui`:
 
@@ -85,8 +99,10 @@ Every component reads only `--lui-*` CSS variables, so you can make your own the
 | `Wallpaper` | The theme gradient, or your own `image` or `video`. Fades between changes. |
 | `MenuBar`, `StatusCapsule` | The top bar. Click a title, then slide across; arrow keys walk the menus. |
 | `Menu`, `MenuButton`, `useContextMenu` | Menus that grow from the pointer, open submenus on hover, and support arrows, Enter, Escape and type-ahead. |
-| `Window`, `Lights` | A controlled window: traffic lights, an optional full-height `sidebar`, a `toolbar`, drag with momentum, edge and corner snapping, eight resize grips, shake to clear, and open, close and minimise motion. |
-| `Dock`, `dockRect` | A frosted dock with macOS-style magnification, labels, running dots and a launch bounce. |
+| `Window`, `Lights` | A controlled window: traffic lights, an optional full-height `sidebar`, a `toolbar`, drag with `momentum`, edge and corner `snapping`, eight resize grips, shake to clear, and open, close and minimise motion. |
+| `Dock`, `dockRect` | A glass dock that keeps its size while icons grow a little under the pointer. Pass `onReorder` to let people drag icons into a new order. Labels, running dots and a launch bounce. |
+| `Drawer` | A glass panel that slides in from the right or left edge, like a notification centre. |
+| `Calendar`, `lunarDate` | A month calendar in any locale. `lunar` adds Chinese lunisolar dates (农历, Âm lịch) under each day. |
 | `CommandPalette` | Spotlight-style search with sections, keyboard navigation and suggestions. |
 | `Toasts` | Notification banners that slide in and out. |
 | `SidebarSection`, `SidebarItem`, `Segmented`, `Switch`, `Button` | Building blocks for window content. |

@@ -3,11 +3,13 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { apps } from "./apps";
+import { emit } from "./bus";
+import type { WinMode } from "./wm";
 import { idbDel, idbGet, idbSet } from "./idb";
-import { isThemeId, type Rect, type ThemeId, type Zone } from "@lupinos/ui";
+import { isThemeId, type Rect, type SnapZone, type ThemeId, type Zone } from "@lupinos/ui";
 import { descendants, HOME, isGone, ownerNodes, purge, restoreTarget, uniqueName, type VNode } from "./vfs";
 
-export type { Rect, Zone };
+export type { Rect, SnapZone, Zone };
 /** boot: logo and progress. welcome: a short greeting, then straight to the desktop. lock: the user picker. */
 export type Power = "boot" | "welcome" | "lock" | "desktop" | "panic" | "off";
 export type Win = Rect & {
@@ -20,7 +22,7 @@ export type Win = Rect & {
   max: boolean;
   ws: number;
   restore?: Rect; // size to go back to after a snap
-  zone?: Zone;
+  zone?: SnapZone;
   from?: Rect; // where the open animation starts
 };
 export type Settings = {
@@ -48,6 +50,10 @@ export type Settings = {
   lang: Lang;
   lunar: boolean;
   clock24: boolean;
+  /** Serious mode: no pranks at all. */
+  serious: boolean;
+  /** Liquid glass (WebGL) for the top bar, dock and widgets. */
+  liquid: boolean;
 };
 export type Session = {
   windows: Win[];
@@ -60,10 +66,25 @@ export type Session = {
   iconPos: Record<string, { col: number; row: number }>;
   /** Pinned dock apps in the order the user dragged them. */
   dockOrder: string[];
+  /** How windows are arranged: floating, tiled like Hyprland, or chained on a scrolling strip. */
+  wm: WinMode;
+  /** Tiling: how much of the screen the first window takes. */
+  tileRatio: number;
+  /** Best score per game, such as "snake" or "mines-easy". */
+  scores: Record<string, number>;
+  /** Live tiles on the desktop. Positions are in px from the top left of the desk. */
+  widgets: Widget[];
+  hero: Hero;
+  /** Unlocked achievements and when. */
+  achievements: Record<string, number>;
 };
+export type WidgetKind = "clock" | "weather" | "note" | "music" | "monitor" | "focus" | "fortune" | "counter" | "calendar";
+export type Widget = { id: string; kind: WidgetKind; x: number; y: number; big?: boolean; text?: string; zone?: string };
+/** The desktop hero: a little character on the dock who levels up while you explore. */
+export type Hero = { on: boolean; small: boolean; xp: number; gold: number; items: string[]; hat?: string; weapon?: string; pet?: string };
 export type User = { id: string; name: string; hue: number; pin?: string; kind: "owner" | "guest" | "local" };
 export type Note = { id: string; title: string; body?: string; at: number };
-export type Overlay = null | "search" | "shortcuts" | "launcher" | "switcher";
+export type Overlay = null | "search" | "shortcuts" | "launcher" | "switcher" | "widgets";
 
 const OLD_THEMES: Record<string, ThemeId> = {
   holo: "yune", akira: "kova", kurenai: "kova", jindou: "olvi", neonhive: "yune",
@@ -90,7 +111,7 @@ export const defaultSettings = (): Settings => ({
   font: "",
   textColor: "",
   textScale: 1,
-  glass: 0.86,
+  glass: 0,
   blur: 40,
   shadow: 1,
   radius: 14,
@@ -101,9 +122,17 @@ export const defaultSettings = (): Settings => ({
   shake: true,
   lang: guessLang(),
   lunar: false,
+  serious: false,
+  liquid: true,
   clock24: !new Intl.DateTimeFormat([], { hour: "numeric" }).resolvedOptions().hour12,
 });
-const newSession = (): Session => ({ windows: [], ws: 0, nodes: [], hiddenIds: [], settings: defaultSettings(), seen: [], iconPos: {}, dockOrder: [] });
+const newSession = (): Session => ({ windows: [], ws: 0, nodes: [], hiddenIds: [], settings: defaultSettings(), seen: [], iconPos: {}, dockOrder: [], wm: "free", tileRatio: 0.5, scores: {}, widgets: defaultWidgets(), hero: defaultHero(), achievements: {} });
+const defaultWidgets = (): Widget[] => [
+  { id: "w-clock", kind: "clock", x: 18, y: 14 },
+  { id: "w-weather", kind: "weather", x: 18, y: 144 },
+  { id: "w-note", kind: "note", x: 18, y: 300, text: "Welcome, valued visitor.\nThe projects are on the right." },
+];
+const defaultHero = (): Hero => ({ on: true, small: false, xp: 0, gold: 0, items: [] });
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
 let z = 10;
@@ -122,6 +151,12 @@ type State = {
   undo: VNode[][];
   dialog: null | { title: string; body: string; ok: string; run: () => void };
   fx: null | "meltdown" | "matrix" | "glitch" | "crt";
+  /** The Konami code: red, black and speed lines until it is entered again. */
+  akira: boolean;
+  /** A prank that needs something on screen, such as the helper bee. */
+  prank: null | "helper-bee";
+  /** Chain mode: how far each desktop's strip is scrolled, in px. Not saved: it changes on every scroll. */
+  chainOffset: number[];
 };
 
 export const useOS = create<State>()(
@@ -140,10 +175,13 @@ export const useOS = create<State>()(
       undo: [],
       dialog: null,
       fx: null,
+      akira: false,
+      prank: null,
+      chainOffset: [0, 0, 0, 0],
     }),
     {
       name: "lupinos",
-      version: 4,
+      version: 6,
       // Older builds had other theme sets. Move each to its closest new theme; uploaded wallpapers stay.
       migrate: (old) => {
         const s = old as Pick<State, "sessions">;
@@ -152,8 +190,17 @@ export const useOS = create<State>()(
           const theme: ThemeId = isThemeId(st.theme) ? st.theme : (OLD_THEMES[st.theme] ?? "kova");
           const upload = sess.nodes.some((n) => n.id === st.wallpaper);
           sess.settings = { ...defaultSettings(), ...st, theme, wallpaper: upload ? st.wallpaper : "theme" };
-          delete (sess as Partial<Session> & { tiling?: boolean }).tiling;
+          const old = sess as Session & { tiling?: boolean };
+          sess.wm ??= old.tiling ? "tile" : "free";
+          delete old.tiling;
+          sess.tileRatio ??= 0.5;
+          // The old tinted defaults become the new blur-only glass; a chosen value stays.
+          if (sess.settings.glass === 0.86 || sess.settings.glass === 0.45) sess.settings.glass = 0;
           sess.iconPos ??= {};
+          sess.scores ??= {};
+          sess.widgets ??= defaultWidgets();
+          sess.hero ??= defaultHero();
+          sess.achievements ??= {};
           sess.dockOrder ??= [];
         }
         return s as State;
@@ -201,11 +248,21 @@ const patchWin = (id: string, fn: (w: Win) => Partial<Win>) =>
 
 // ---- notifications, dialogs, effects ------------------------------------------
 
-export function notify(title: string, body?: string) {
+export function notify(title: string, body?: string, ms = 4000) {
   const note = { id: uid(), title, body, at: Date.now() };
   set((s) => ({ notes: [note, ...s.notes].slice(0, 50), toasts: [...s.toasts, note.id] }));
-  setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t !== note.id) })), 4000);
+  setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t !== note.id) })), ms);
 }
+
+/** Unlocks an achievement once, with a toast. Returns true the first time. */
+export function unlock(id: string, name: string) {
+  const sess = session();
+  if (!sess || sess.achievements[id]) return false;
+  patch((s) => ({ achievements: { ...s.achievements, [id]: Date.now() } }));
+  notify("Achievement unlocked", name);
+  return true;
+}
+export const seen = (key: string) => !!session()?.seen.includes(key);
 export const dismissToast = (id: string) => set((s) => ({ toasts: s.toasts.filter((t) => t !== id) }));
 export const clearNotes = () => set({ notes: [], toasts: [] });
 
@@ -240,9 +297,10 @@ export function login(id: string, { intro = true } = {}) {
 
 function openIntro() {
   const gap = 24;
-  const w = Math.min(560, (innerWidth - gap * 3) / 2);
+  const room = innerWidth - 130; // keep the desktop icon column on the right clear
+  const w = Math.min(560, (room - gap * 3) / 2);
   const h = Math.min(500, innerHeight - 26 - 110);
-  const left = Math.max(gap, (innerWidth - (w * 2 + gap)) / 2);
+  const left = Math.max(gap, (room - (w * 2 + gap)) / 2);
   const about = open("about");
   const files = open("files", { arg: "projects", title: "Projects" });
   if (about) moveWin(about, { x: Math.round(left), y: 56, w: Math.round(w), h });
@@ -250,6 +308,27 @@ function openIntro() {
 }
 
 export const setIconPos = (pos: Session["iconPos"]) => patch(() => ({ iconPos: pos }));
+
+// ---- widgets and the hero -------------------------------------------------------
+
+export const addWidget = (kind: WidgetKind) =>
+  patch((s) => ({ widgets: [...s.widgets, { id: uid(), kind, x: 160 + (s.widgets.length % 5) * 24, y: 60 + (s.widgets.length % 5) * 24 }] }));
+export const updateWidget = (id: string, p: Partial<Widget>) => patch((s) => ({ widgets: s.widgets.map((w) => (w.id === id ? { ...w, ...p } : w)) }));
+export const removeWidget = (id: string) => patch((s) => ({ widgets: s.widgets.filter((w) => w.id !== id) }));
+export const setHero = (p: Partial<Hero>) => patch((s) => ({ hero: { ...s.hero, ...p } }));
+/** Level from experience: 25 xp for level 2, then each level needs a little more. */
+export const heroLevel = (xp: number) => Math.floor(Math.sqrt(xp / 25)) + 1;
+export const xpFor = (level: number) => (level - 1) ** 2 * 25;
+
+/** Keeps the best score for a game. Times are better when lower. Returns true for a new best. */
+export function recordScore(game: string, value: number, lowerIsBetter = false): boolean {
+  const sess = session();
+  if (!sess) return false;
+  const old = sess.scores[game];
+  const better = old === undefined || (lowerIsBetter ? value < old : value > old);
+  if (better) patch((s) => ({ scores: { ...s.scores, [game]: value } }));
+  return better;
+}
 export const setDockOrder = (dockOrder: string[]) => patch(() => ({ dockOrder }));
 
 /** Lock and switch user both return to the welcome screen; every session stays as it was. */
@@ -307,6 +386,7 @@ export function open(app: string, opts: { arg?: string; title?: string; from?: R
     from: opts.from,
   };
   patch((s) => ({ windows: [...s.windows, win] }));
+  emit({ type: "app-open", app });
   return win.id;
 }
 
@@ -314,7 +394,61 @@ export const close = (id: string) => patch((s) => ({ windows: s.windows.filter((
 export const focus = (id: string) => patchWin(id, (w) => ({ z: w.z === z ? w.z : ++z, min: false }));
 export const minimize = (id: string) => patchWin(id, () => ({ min: true }));
 export const toggleMax = (id: string) => patchWin(id, (w) => ({ max: !w.max, z: ++z }));
-export const moveWin = (id: string, r: Partial<Rect> & { restore?: Rect; zone?: Zone }) => patchWin(id, () => ({ ...r, max: false, from: undefined }));
+export const moveWin = (id: string, r: Partial<Rect> & { restore?: Rect; zone?: SnapZone }) => patchWin(id, () => ({ ...r, max: false, from: undefined }));
+const MODES: WinMode[] = ["free", "tile", "chain"];
+export const MODE_NAMES: Record<WinMode, string> = { free: "Freestyle", tile: "Tiling", chain: "Chain" };
+
+/** Switches how windows are arranged. Maximised windows are let go, so the layout takes over. */
+export function setWinMode(wm: WinMode) {
+  patch((s) => ({ wm, windows: s.windows.map((w) => ({ ...w, max: false })) }));
+  if (wm === "tile") emit({ type: "egg", id: "tiling" });
+}
+export function cycleWinMode() {
+  const cur = session()?.wm ?? "free";
+  const wm = MODES[(MODES.indexOf(cur) + 1) % MODES.length];
+  setWinMode(wm);
+  notify(`${MODE_NAMES[wm]} windows`, wm === "tile" ? "Alt+arrows move focus, Alt+Shift+arrows swap." : wm === "chain" ? "Alt+Left and Right scroll the strip, Alt+R resizes." : "Drag windows anywhere.", 2500);
+}
+export const setTileRatio = (r: number) => patch(() => ({ tileRatio: Math.min(0.8, Math.max(0.2, r)) }));
+export const setChainOffset = (ws: number, x: number) => set((s) => ({ chainOffset: s.chainOffset.map((v, i) => (i === ws ? Math.max(0, Math.round(x)) : v)) }));
+
+/** Moves a window to a place among the windows of its desktop, which is the tiling and chain order. */
+export const moveWindowTo = (id: string, index: number) =>
+  patch((s) => {
+    const win = s.windows.find((w) => w.id === id);
+    if (!win) return {};
+    const rest = s.windows.filter((w) => w.id !== id);
+    const same = rest.filter((w) => w.ws === win.ws && !w.min);
+    const before = same[index];
+    const at = before ? rest.indexOf(before) : rest.length;
+    return { windows: [...rest.slice(0, at), win, ...rest.slice(at)] };
+  });
+
+/** Sends a window to another desktop, like Hyprland's movetoworkspace. */
+export const moveToDesktop = (id: string, ws: number) => patchWin(id, () => ({ ws, z: ++z }));
+/** Swaps two windows in the tiling order, which is the order of the windows list. */
+export const swapWindows = (a: string, b: string) =>
+  patch((s) => {
+    const i = s.windows.findIndex((w) => w.id === a);
+    const j = s.windows.findIndex((w) => w.id === b);
+    if (i < 0 || j < 0) return {};
+    const windows = [...s.windows];
+    [windows[i], windows[j]] = [windows[j], windows[i]];
+    return { windows };
+  });
+/** Stacks the windows on the current desktop from the top left, each a step down and right. */
+export const cascade = (area: Rect) =>
+  patch((s) => {
+    let n = 0;
+    return {
+      wm: "free" as WinMode,
+      windows: s.windows.map((w) => {
+        if (w.ws !== s.ws || w.min) return w;
+        const k = n++;
+        return { ...w, max: false, zone: undefined, restore: undefined, x: area.x + 40 + k * 30, y: area.y + 20 + k * 30, z: ++z };
+      }),
+    };
+  });
 export const setArg = (id: string, arg: string, title?: string) => patchWin(id, (w) => ({ arg, title: title ?? w.title }));
 export const minimizeOthers = (id: string) =>
   patch((s) => ({ windows: s.windows.map((w) => (w.id !== id && w.ws === s.ws ? { ...w, min: true } : w)) }));
@@ -335,14 +469,16 @@ export function resetSession() {
   set({ sessions: { ...sessions, [current]: newSession() }, undo: [] });
 }
 
-/** Theme switches crossfade the whole screen where the browser supports view transitions. */
-export function switchTheme(theme: ThemeId) {
-  const s = session();
-  if (!s || s.settings.theme === theme) return;
-  const apply = () => setSettings({ theme });
+/** Crossfades the whole screen through a change, where the browser supports view transitions. */
+export function crossfade(apply: () => void) {
   const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
   if (doc.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) doc.startViewTransition(apply);
   else apply();
+}
+
+export function switchTheme(theme: ThemeId) {
+  const s = session();
+  if (s && s.settings.theme !== theme) crossfade(() => setSettings({ theme }));
 }
 
 // ---- files and trash ---------------------------------------------------------
