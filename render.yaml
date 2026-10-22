@@ -7,7 +7,7 @@
 # Postgres. Without DATABASE_URL the API keeps everything in memory until it restarts.
 services:
   - type: web
-    name: lupinos-site
+    name: lupinos
     runtime: static
     buildCommand: mkdir -p .corepack && corepack enable --install-directory .corepack && export PATH="$PWD/.corepack:$PATH" && pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: apps/site/dist
