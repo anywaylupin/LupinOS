@@ -2,6 +2,7 @@
   "name": "lupinos",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "pnpm --filter @lupinos/site dev",
     "build": "pnpm --filter @lupinos/ui build && pnpm --filter @lupinos/site build",

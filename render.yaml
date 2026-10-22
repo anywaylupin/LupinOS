@@ -1,17 +1,21 @@
 # Render Blueprint: the static site and the API. Sync it from the Render dashboard.
 # No secrets live here: Render generates SESSION_SECRET and OWNER_KEY, and asks for the rest.
 # Free web services sleep after 15 minutes; LupinOS never waits for the API, so that is fine.
+# Render's Node image keeps /usr/bin read-only, so corepack puts its pnpm shim in .corepack
+# instead, on PATH for the rest of the build. package.json pins the pnpm version.
 # Free Render Postgres expires after 30 days, so point DATABASE_URL at a paid or external
 # Postgres. Without DATABASE_URL the API keeps everything in memory until it restarts.
 services:
   - type: web
     name: lupinos-site
     runtime: static
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    buildCommand: mkdir -p .corepack && corepack enable --install-directory .corepack && export PATH="$PWD/.corepack:$PATH" && pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: apps/site/dist
     envVars:
       - key: NODE_VERSION
         value: "24"
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
       - key: PUBLIC_API_URL
         fromService:
           type: web
@@ -32,7 +36,7 @@ services:
     name: lupinos-api
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter @lupinos/server
+    buildCommand: mkdir -p .corepack && corepack enable --install-directory .corepack && export PATH="$PWD/.corepack:$PATH" && pnpm install --frozen-lockfile --filter @lupinos/server
     startCommand: node apps/server/src/index.ts
     healthCheckPath: /health
     buildFilter:
@@ -41,6 +45,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "24"
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
       - key: NODE_ENV
         value: production
       - key: SESSION_SECRET
