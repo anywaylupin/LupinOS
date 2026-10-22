@@ -3,3 +3,5 @@ dist
 .astro
 .superpowers
 .corepack
+receipts/
+review-receipts/
