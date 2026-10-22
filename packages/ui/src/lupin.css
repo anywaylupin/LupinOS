@@ -9,7 +9,7 @@
   --lui-font: var(--lui-font-face, var(--lui-font-theme)), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "PingFang TC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans TC", system-ui, sans-serif;
   /* knobs an app can set inline on the root: glass opacity, blur, shadow strength, text scale */
   --lui-glass: 0;
-  --lui-blur: 40px;
+  --lui-blur: 20px;
   --lui-shadow-k: 1;
   --lui-text-scale: 1;
   --lui-font-mono: "SF Mono", ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
@@ -1450,121 +1450,40 @@ textarea.lui-field {
   text-transform: uppercase;
 }
 
-/* wallpaper: an abstract layer over the theme gradient, a fading grid, two thin rings and a slash */
-/* wallpaper art: each theme draws its own abstract layer over its gradient. Sizes use container
-   units, so a small preview shows the same picture as the full screen. */
-.lui-wallpaper {
-  container-type: size;
-}
-.lui-wallpaper:not(:has(> img, > video))::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: var(--lui-art, none);
-  -webkit-mask-image: var(--lui-art-mask, none);
-  mask-image: var(--lui-art-mask, none);
-  transition: opacity 0.6s;
-}
-/* Kova: an Akira sun, speed slashes and a fading grid */
-.lui[data-lui-theme="kova"] {
-  --lui-art:
-    radial-gradient(circle at 74% 34%, rgb(255 236 220 / 0.18) 0 17cqmin, transparent calc(17cqmin + 1px)),
-    radial-gradient(circle at 74% 34%, transparent 0 24cqmin, rgb(255 255 255 / 0.22) 24cqmin calc(24cqmin + 1.5px), transparent calc(24cqmin + 2px)),
-    repeating-linear-gradient(162deg, transparent 0 3.2cqmin, rgb(255 255 255 / 0.07) 3.2cqmin 3.5cqmin, transparent 3.5cqmin 9cqmin) 0 0 / 100% 100%,
-    linear-gradient(116deg, transparent 0 58%, rgb(0 0 0 / 0.14) 58% 66%, transparent 66%),
-    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 7cqmin 7cqmin,
-    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 7cqmin 7cqmin;
-  --lui-art-mask: radial-gradient(130% 100% at 70% 30%, #000 35%, transparent 92%);
-}
-/* Tazu: a kiln sunset, cloud swirls in the corner, warm bands low down */
-.lui[data-lui-theme="tazu"] {
-  --lui-art:
-    radial-gradient(circle at 68% 40%, rgb(255 236 200 / 0.38) 0 15cqmin, transparent calc(15cqmin + 1px)),
-    radial-gradient(circle at 16% 82%, transparent 0 8cqmin, rgb(255 255 255 / 0.28) 8cqmin calc(8cqmin + 2px), transparent calc(8cqmin + 2.5px), transparent 0 13cqmin, rgb(255 255 255 / 0.16) 13cqmin calc(13cqmin + 2px), transparent calc(13cqmin + 2.5px)),
-    radial-gradient(circle at 30% 90%, transparent 0 6cqmin, rgb(255 255 255 / 0.22) 6cqmin calc(6cqmin + 2px), transparent calc(6cqmin + 2.5px)),
-    radial-gradient(circle at 8% 70%, transparent 0 4cqmin, rgb(255 255 255 / 0.2) 4cqmin calc(4cqmin + 2px), transparent calc(4cqmin + 2.5px)),
-    repeating-linear-gradient(180deg, transparent 0 4cqmin, rgb(120 40 10 / 0.1) 4cqmin 4.6cqmin) 0 62% / 100% 38% no-repeat;
-}
-/* Mimo: pollen drifting in a staggered dot field, with two soft blooms */
-.lui[data-lui-theme="mimo"] {
-  --lui-art:
-    radial-gradient(circle at 78% 26%, rgb(255 255 255 / 0.32) 0 12cqmin, transparent calc(12cqmin + 1px)),
-    radial-gradient(circle at 22% 78%, rgb(255 255 255 / 0.2) 0 18cqmin, transparent calc(18cqmin + 1px)),
-    radial-gradient(circle, rgb(120 80 0 / 0.16) 0 0.45cqmin, transparent calc(0.45cqmin + 0.5px)) 0 0 / 4cqmin 4cqmin,
-    radial-gradient(circle, rgb(120 80 0 / 0.16) 0 0.45cqmin, transparent calc(0.45cqmin + 0.5px)) 2cqmin 2cqmin / 4cqmin 4cqmin;
-  --lui-art-mask: linear-gradient(160deg, #000 20%, rgb(0 0 0 / 0.4) 70%, #000);
-}
-/* Olvi: ink-wash ridges, a pale moon and bamboo strokes */
-.lui[data-lui-theme="olvi"] {
-  --lui-art:
-    radial-gradient(circle at 80% 22%, rgb(255 255 240 / 0.5) 0 7cqmin, transparent calc(7cqmin + 1px)),
-    radial-gradient(120% 55% at 18% 112%, rgb(10 40 25 / 0.42) 0 42%, transparent 42.5%),
-    radial-gradient(90% 48% at 78% 118%, rgb(10 40 25 / 0.32) 0 46%, transparent 46.5%),
-    radial-gradient(70% 40% at 50% 120%, rgb(255 255 255 / 0.12) 0 45%, transparent 45.5%),
-    repeating-linear-gradient(90deg, transparent 0 6cqmin, rgb(255 255 255 / 0.09) 6cqmin calc(6cqmin + 2px), transparent calc(6cqmin + 2px) 11cqmin) 0 0 / 30% 100% no-repeat;
-}
-/* Lisen: a far-future horizon, a grid that runs to the vanishing point, and thin orbits */
-.lui[data-lui-theme="lisen"] {
-  --lui-art:
-    linear-gradient(180deg, transparent 0 61%, rgb(180 230 255 / 0.5) 61% calc(61% + 2px), transparent calc(61% + 2px)),
-    repeating-conic-gradient(from 90deg at 50% 61%, rgb(200 235 255 / 0.12) 0 0.5deg, transparent 0.5deg 6deg) 0 61% / 100% 39% no-repeat,
-    repeating-linear-gradient(180deg, rgb(200 235 255 / 0.1) 0 1px, transparent 1px 5cqmin) 0 100% / 100% 39% no-repeat,
-    radial-gradient(ellipse 60% 22% at 50% 61%, rgb(160 220 255 / 0.3), transparent 70%),
-    radial-gradient(circle at 50% 61%, transparent 0 34cqmin, rgb(255 255 255 / 0.1) 34cqmin calc(34cqmin + 1px), transparent calc(34cqmin + 1.5px));
-}
-/* Yune: a neon skyline against dusk, with scanlines */
-.lui[data-lui-theme="yune"] {
-  --lui-art:
-    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 4px),
-    radial-gradient(ellipse 40% 30% at 20% 78%, rgb(255 80 200 / 0.28), transparent 70%),
-    radial-gradient(ellipse 35% 28% at 82% 70%, rgb(60 220 255 / 0.22), transparent 70%),
-    linear-gradient(rgb(18 10 36 / 0.6), rgb(18 10 36 / 0.6)) 4% 100% / 7% 28% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.55), rgb(18 10 36 / 0.55)) 13% 100% / 5% 40% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.62), rgb(18 10 36 / 0.62)) 22% 100% / 9% 22% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.5), rgb(18 10 36 / 0.5)) 33% 100% / 4% 46% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.6), rgb(18 10 36 / 0.6)) 41% 100% / 8% 30% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.55), rgb(18 10 36 / 0.55)) 55% 100% / 6% 38% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.62), rgb(18 10 36 / 0.62)) 64% 100% / 10% 24% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.5), rgb(18 10 36 / 0.5)) 76% 100% / 5% 52% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.6), rgb(18 10 36 / 0.6)) 85% 100% / 8% 33% no-repeat,
-    linear-gradient(rgb(18 10 36 / 0.55), rgb(18 10 36 / 0.55)) 96% 100% / 6% 42% no-repeat;
-}
-/* Peli: ripples spreading on a pond and drifting peony petals */
-.lui[data-lui-theme="peli"] {
-  --lui-art:
-    repeating-radial-gradient(circle at 24% 70%, transparent 0 5cqmin, rgb(255 255 255 / 0.12) 5cqmin calc(5cqmin + 1.5px)),
-    radial-gradient(ellipse 2.4cqmin 1.4cqmin at 70% 20%, rgb(255 240 245 / 0.75), transparent),
-    radial-gradient(ellipse 1.8cqmin 1.1cqmin at 82% 34%, rgb(255 240 245 / 0.6), transparent),
-    radial-gradient(ellipse 2cqmin 1.2cqmin at 61% 41%, rgb(255 240 245 / 0.55), transparent),
-    radial-gradient(ellipse 1.6cqmin 1cqmin at 90% 12%, rgb(255 240 245 / 0.5), transparent),
-    radial-gradient(ellipse 2.2cqmin 1.3cqmin at 54% 15%, rgb(255 240 245 / 0.5), transparent),
-    radial-gradient(circle at 78% 30%, rgb(255 255 255 / 0.18) 0 16cqmin, transparent calc(16cqmin + 1px));
-  --lui-art-mask: radial-gradient(150% 120% at 30% 60%, #000 30%, transparent 90%);
-}
-
 /* ---- plain glass: every pane that is not liquid is clear glass, to sit with the Aqua surfaces ---- */
 
 .lui[data-lui-theme][data-lui-mode="light"] {
-  --lui-menu: transparent;
-  --lui-sidebar: transparent;
-  --lui-tone: brightness(1.05);
+  /* light glass needs a veil: dark text on a bright, saturated blur alone does not read */
+  --lui-veil: rgb(255 255 255 / 0.52);
+  --lui-menu: rgb(255 255 255 / 0.64);
+  --lui-sidebar: rgb(255 255 255 / 0.4);
+  --lui-muted: #54545b;
+  --lui-faint: #77777f;
+  --lui-tone: brightness(1.03);
+  /* windows rest on the desktop: a hairline and a close, soft contact shadow, no deep drop */
+  --lui-shadow-window: 0 0 0 0.5px rgb(0 0 0 / calc(0.12 * var(--lui-shadow-k))), 0 1px 2px rgb(0 0 0 / calc(0.08 * var(--lui-shadow-k))), 0 4px 10px rgb(0 0 0 / calc(0.06 * var(--lui-shadow-k)));
+  --lui-shadow-window-back: 0 0 0 0.5px rgb(0 0 0 / calc(0.1 * var(--lui-shadow-k))), 0 1px 2px rgb(0 0 0 / calc(0.05 * var(--lui-shadow-k)));
   --lui-side-sel: rgb(255 255 255 / 0.5);
   --lui-glass-edge: rgb(255 255 255 / 0.85);
   --lui-window-inner: inset 0 0 0 0.5px rgb(255 255 255 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.7);
   --lui-rim: inset 0 0 0 0.5px rgb(255 255 255 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.7);
 }
 .lui[data-lui-theme][data-lui-mode="dark"] {
-  --lui-menu: transparent;
-  --lui-sidebar: transparent;
-  --lui-tone: brightness(0.82);
+  --lui-veil: rgb(20 18 26 / 0.24);
+  --lui-menu: rgb(28 26 34 / 0.46);
+  --lui-sidebar: rgb(20 18 26 / 0.2);
+  --lui-muted: #a9a9b0;
+  --lui-faint: #7d7d85;
+  --lui-tone: brightness(0.9);
+  --lui-shadow-window: 0 0 0 0.5px rgb(0 0 0 / calc(0.5 * var(--lui-shadow-k))), 0 1px 3px rgb(0 0 0 / calc(0.2 * var(--lui-shadow-k))), 0 4px 12px rgb(0 0 0 / calc(0.16 * var(--lui-shadow-k)));
+  --lui-shadow-window-back: 0 0 0 0.5px rgb(0 0 0 / calc(0.45 * var(--lui-shadow-k))), 0 1px 3px rgb(0 0 0 / calc(0.14 * var(--lui-shadow-k)));
   --lui-side-sel: rgb(255 255 255 / 0.1);
   --lui-glass-edge: rgb(255 255 255 / 0.35);
   --lui-window-inner: inset 0 0 0 0.5px rgb(255 255 255 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.2);
   --lui-rim: inset 0 0 0 0.5px rgb(255 255 255 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
-/* windows: blur only, no colour laid over it (the Transparency slider adds a tint back);
-   a light hairline, no accent glow, no corner marks */
+/* windows: blur with a thin veil (white in light mode, dusk in dark) so text keeps its contrast;
+   the Transparency slider tints more. A light hairline, no accent glow, no corner marks. */
 .lui-window[data-focused] {
   box-shadow: var(--lui-shadow-window);
 }
@@ -1579,7 +1498,7 @@ textarea.lui-field {
   background: none;
 }
 .lui-window-main {
-  background: color-mix(in srgb, var(--lui-content) calc(var(--lui-glass) * 100%), transparent);
+  background: color-mix(in srgb, var(--lui-content) calc(var(--lui-glass) * 100%), var(--lui-veil, transparent));
 }
 .lui-window-main,
 .lui-window-sidebar,
@@ -1588,7 +1507,7 @@ textarea.lui-field {
   backdrop-filter: blur(var(--lui-blur)) saturate(130%) var(--lui-tone, brightness(1));
 }
 .lui-window-sidebar {
-  background: none;
+  background: var(--lui-sidebar);
   border-right-color: color-mix(in srgb, var(--lui-glass-edge) 40%, transparent);
 }
 .lui-window[data-flying] .lui-window-main {

@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test src/os/vfs.test.ts src/os/grid.test.ts src/games/games.test.ts src/os/wm.test.ts src/os/wallpaint.test.ts",
+    "test": "node --test src/os/vfs.test.ts src/os/grid.test.ts src/games/games.test.ts src/os/wm.test.ts src/os/ripple.test.ts src/os/scene.test.ts",
     "og": "node scripts/og.ts"
   },
   "dependencies": {

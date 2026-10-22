@@ -45,7 +45,7 @@ export function Toasts({ toasts, onDismiss }: ToastsProps) {
     <div className="lui-toasts" role="status" aria-live="polite">
       {shown.map((t) => (
         // biome-ignore lint/a11y/useKeyWithClickEvents: banners dismiss themselves; clicking is a shortcut
-        <div key={t.id} className="lui-toast" data-leaving={t.leaving || undefined} onClick={() => onDismiss?.(t.id)}>
+        <div key={t.id} className="lui-toast" data-id={t.id} data-leaving={t.leaving || undefined} onClick={() => onDismiss?.(t.id)}>
           {t.icon}
           <div>
             <strong>{t.title}</strong>

@@ -74,6 +74,19 @@ export function Menu({ items, x, y, onClose, label = "Menu", onDone, onNavigate,
     el.focus({ preventScroll: true });
   }, [x, y, isSubmenu]);
 
+  // So a page can draw something behind open menus (a liquid surface, say), "lui-menu" fires on
+  // window with the menu element as it opens, settles into place, starts closing and is gone.
+  useEffect(() => {
+    const el = ref.current;
+    if (el) dispatchEvent(new CustomEvent("lui-menu", { detail: { el, open: !closing } }));
+  }, [pos, closing]);
+  useEffect(() => {
+    const el = ref.current;
+    return () => {
+      dispatchEvent(new CustomEvent("lui-menu", { detail: { el, open: false } }));
+    };
+  }, []);
+
   // Clicks anywhere outside every open menu close it.
   useEffect(() => {
     if (isSubmenu) return;

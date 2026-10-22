@@ -6,6 +6,7 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, use
 import { effectiveMode, effectiveMotion, onKey, openPath, panic } from "./actions";
 import { routeFor } from "./apps";
 import { Desktop } from "./Desktop";
+import { LiquidMenus } from "./Liquid";
 import { Mobile } from "./Mobile";
 import { Overlays } from "./Overlays";
 import { Boot, Greeting, Off, Panic, PhoneLock, Saver, UserPicker } from "./Power";
@@ -69,6 +70,8 @@ export default function OS() {
   // Before anyone is signed in, screens wear the last user's theme.
   const settings = sess?.settings ?? (lastUser ? sessions[lastUser]?.settings : undefined) ?? os.defaultSettings();
   const user = os.userById(current);
+  // Liquid windows and menus need the liquid layer, which only the desktop shell has.
+  const liquidChrome = settings.liquid && settings.chrome === "liquid" && shell === "desktop";
 
   // Deep links skip the boot and open their window straight away.
   useEffect(() => {
@@ -123,7 +126,10 @@ export default function OS() {
   }, [top, power, sess]);
 
   useEffect(() => {
-    if (import.meta.env.PROD && "serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+    if (!("serviceWorker" in navigator)) return;
+    if (import.meta.env.PROD) navigator.serviceWorker.register("/sw.js").catch(() => {});
+    // A worker left by a production preview on the same port would serve stale modules to the dev server.
+    else navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
   }, []);
 
   const wake = useCallback(() => setIdle(false), []);
@@ -139,7 +145,7 @@ export default function OS() {
   else
     screen = (
       <>
-        <DesktopWallpaper id={settings.wallpaper} nodes={sess.nodes} />
+        <DesktopWallpaper id={settings.wallpaper} nodes={sess.nodes} live={shell === "desktop" && (effectiveMotion(settings) ?? "full") === "full"} />
         {shell === "desktop" ? <Desktop sess={sess} user={user} /> : <Mobile sess={sess} shell={shell} />}
         {idle && <Saver onWake={wake} />}
       </>
@@ -154,6 +160,7 @@ export default function OS() {
       data-shell={shell}
       data-icons={settings.iconSize}
       data-cursor={settings.plainCursor ? "plain" : undefined}
+      data-chrome={liquidChrome ? "liquid" : undefined}
       data-akira={akira || undefined}
       data-moment={moment() ?? undefined}
       lang={settings.lang}
@@ -173,6 +180,7 @@ export default function OS() {
     >
       {screen}
       {(power === "desktop" || power === "lock") && <Overlays />}
+      {power === "desktop" && liquidChrome && <LiquidMenus settings={settings} mode={effectiveMode(settings)} />}
     </LupinRoot>
   );
 }

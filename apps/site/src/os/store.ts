@@ -54,6 +54,8 @@ export type Settings = {
   serious: boolean;
   /** Liquid glass (WebGL) for the top bar, dock and widgets. */
   liquid: boolean;
+  /** Windows and menus: clear blurred glass, or liquid surfaces from the same WebGL layer. */
+  chrome: "glass" | "liquid";
 };
 export type Session = {
   windows: Win[];
@@ -112,7 +114,7 @@ export const defaultSettings = (): Settings => ({
   textColor: "",
   textScale: 1,
   glass: 0,
-  blur: 40,
+  blur: 20,
   shadow: 1,
   radius: 14,
   dockSize: 50,
@@ -124,6 +126,7 @@ export const defaultSettings = (): Settings => ({
   lunar: false,
   serious: false,
   liquid: true,
+  chrome: "glass",
   clock24: !new Intl.DateTimeFormat([], { hour: "numeric" }).resolvedOptions().hour12,
 });
 const newSession = (): Session => ({ windows: [], ws: 0, nodes: [], hiddenIds: [], settings: defaultSettings(), seen: [], iconPos: {}, dockOrder: [], wm: "free", tileRatio: 0.5, scores: {}, widgets: defaultWidgets(), hero: defaultHero(), achievements: {} });
@@ -181,7 +184,7 @@ export const useOS = create<State>()(
     }),
     {
       name: "lupinos",
-      version: 6,
+      version: 7,
       // Older builds had other theme sets. Move each to its closest new theme; uploaded wallpapers stay.
       migrate: (old) => {
         const s = old as Pick<State, "sessions">;
@@ -196,6 +199,8 @@ export const useOS = create<State>()(
           sess.tileRatio ??= 0.5;
           // The old tinted defaults become the new blur-only glass; a chosen value stays.
           if (sess.settings.glass === 0.86 || sess.settings.glass === 0.45) sess.settings.glass = 0;
+          // Clearer glass: the old default blur halves; a chosen value stays.
+          if (sess.settings.blur === 40) sess.settings.blur = 20;
           sess.iconPos ??= {};
           sess.scores ??= {};
           sess.widgets ??= defaultWidgets();
@@ -229,6 +234,9 @@ const get = useOS.getState;
 export const allUsers = (users: User[]) => [OWNER, ...users, GUEST];
 export const userById = (id: string | null) => allUsers(get().users).find((u) => u.id === id);
 export const useSession = () => useOS((s) => (s.current ? s.sessions[s.current] : undefined));
+/** The theme the screens wear: the signed-in user's, or before sign-in the last user's. */
+export const useThemeId = () =>
+  useOS((s) => (s.sessions[s.current ?? ""] ?? s.sessions[s.lastUser ?? ""])?.settings.theme ?? defaultSettings().theme);
 export const session = () => {
   const s = get();
   return s.current ? s.sessions[s.current] : undefined;
@@ -265,6 +273,7 @@ export function unlock(id: string, name: string) {
 export const seen = (key: string) => !!session()?.seen.includes(key);
 export const dismissToast = (id: string) => set((s) => ({ toasts: s.toasts.filter((t) => t !== id) }));
 export const clearNotes = () => set({ notes: [], toasts: [] });
+export const removeNote = (id: string) => set((s) => ({ notes: s.notes.filter((n) => n.id !== id), toasts: s.toasts.filter((t) => t !== id) }));
 
 export const confirmDialog = (title: string, body: string, ok: string, run: () => void) => set({ dialog: { title, body, ok, run } });
 export const closeDialog = () => set({ dialog: null });
@@ -476,9 +485,10 @@ export function crossfade(apply: () => void) {
   else apply();
 }
 
+/** No page crossfade here: the wallpaper animates the switch itself, and a snapshot would hide it. */
 export function switchTheme(theme: ThemeId) {
   const s = session();
-  if (s && s.settings.theme !== theme) crossfade(() => setSettings({ theme }));
+  if (s && s.settings.theme !== theme) setSettings({ theme });
 }
 
 // ---- files and trash ---------------------------------------------------------

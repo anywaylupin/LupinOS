@@ -9,7 +9,7 @@ import type { AppProps } from "../os/apps";
 import { useT } from "../os/i18n";
 import * as os from "../os/store";
 import { LupinMark } from "../os/ui";
-import { uploadWallpaper, useBlobUrl } from "../os/Wallpaper";
+import { ThemeScene, uploadWallpaper, useBlobUrl } from "../os/Wallpaper";
 import type { VNode } from "../os/vfs";
 
 const panes = [
@@ -177,7 +177,9 @@ export default function Settings({ win }: AppProps) {
               <button key={th.id} type="button" role="radio" aria-checked={s.theme === th.id} className="theme-card" onClick={() => os.switchTheme(th.id)}>
                 {/* Each preview is its own themed root, so it shows the theme's real window and font. */}
                 <span className="theme-preview lui" data-lui-theme={th.id} data-lui-mode={mode} style={{ background: th.wallpaper, "--lui-font-face": "initial" } as CSSProperties}>
-                  <span className="lui-wallpaper" aria-hidden="true" />
+                  <span className="lui-wallpaper" aria-hidden="true">
+                    <ThemeScene theme={th.id} />
+                  </span>
                   <span className="theme-win">
                     <span className="theme-win-bar">
                       <i />
@@ -205,7 +207,9 @@ export default function Settings({ win }: AppProps) {
           <div className="wall-grid">
             <div className="wall-tile-wrap">
               <button type="button" className="wall-tile" aria-pressed={s.wallpaper === "theme"} aria-label={t("Theme gradient")} onClick={() => set({ wallpaper: "theme" })}>
-                <span className="lui-wallpaper" />
+                <span className="lui-wallpaper">
+                  <ThemeScene />
+                </span>
               </button>
               <span>{t("Theme gradient")}</span>
             </div>
@@ -293,6 +297,19 @@ export default function Settings({ win }: AppProps) {
             <Row label={t("Liquid glass")} hint="Top bar, dock and widgets become liquid that refracts the wallpaper and fuses when close. Uses the graphics card.">
               <Switch checked={s.liquid} onChange={(e) => set({ liquid: e.target.checked })} aria-label={t("Liquid glass")} />
             </Row>
+            {s.liquid && (
+              <Row label={t("Windows and menus")} hint="Glass blurs what is behind them. Liquid gives every window a liquid rim and floats menus on liquid.">
+                <Segmented
+                  label={t("Windows and menus")}
+                  value={s.chrome ?? "glass"}
+                  onChange={(chrome) => set({ chrome })}
+                  options={[
+                    { value: "glass", label: t("Glass") },
+                    { value: "liquid", label: t("Liquid") },
+                  ]}
+                />
+              </Row>
+            )}
             <Slider label={t("Transparency")} value={1 - s.glass} min={0} max={1} step={0.02} format={pct} onChange={(v) => set({ glass: Math.round((1 - v) * 100) / 100 })} />
             <Slider label={t("Blur")} value={s.blur} min={0} max={60} step={2} format={(v) => `${v}px`} onChange={(v) => set({ blur: v })} />
             <Slider label={t("Shadow")} value={s.shadow} min={0} max={2} step={0.1} format={pct} onChange={(v) => set({ shadow: v })} />

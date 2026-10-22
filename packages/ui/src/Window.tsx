@@ -36,6 +36,8 @@ export type WindowProps = {
   /** Content for a full-height sidebar. */
   sidebar?: ReactNode;
   sidebarWidth?: number;
+  /** Drawn first inside the window, behind everything: a placeholder a liquid-glass layer can track, say. */
+  backdrop?: ReactNode;
   /** Controls on the right of the toolbar, before the window controls. */
   toolbar?: ReactNode;
   /** "unified": tall toolbar with a bold title. "title": slim bar. */
@@ -191,6 +193,7 @@ export function Window({
   minHeight = 200,
   sidebar,
   sidebarWidth,
+  backdrop,
   toolbar,
   chrome,
   snapping = true,
@@ -448,6 +451,7 @@ export function Window({
           if (t.closest("[data-lui-drag]") && !t.closest(INTERACTIVE)) onToggleMaximize?.();
         }}
       >
+        {backdrop}
         {sidebar && (
           <aside className="lui-window-sidebar" data-lui-drag>
             {sidebar}

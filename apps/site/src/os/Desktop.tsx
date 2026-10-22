@@ -1,8 +1,8 @@
 // The desktop shell: menu bar, desktop icons, windows on four desktops, and the dock.
 // Chrome comes from @lupinos/ui; this file wires it to the store.
-import { AppIcon, Calendar, Dock, type DockItem, Drawer, lunarDate, MenuBar, MenuButton, type MenuItem, StatusCapsule, themeList, UiIcon, useContextMenu, usePortalTarget } from "@lupinos/ui";
+import { AppIcon, Calendar, Dock, type DockItem, Drawer, lunarDate, MenuBar, MenuButton, type MenuItem, Segmented, StatusCapsule, themeList, UiIcon, useContextMenu, usePortalTarget } from "@lupinos/ui";
 import { createPortal } from "react-dom";
-import { type CSSProperties, type DragEvent, type KeyboardEvent, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from "react";
+import { type ComponentProps, type CSSProperties, type DragEvent, type KeyboardEvent, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from "react";
 import { chainFor, deskArea, effectiveMode, GAP, openNode, restart, shutdown, tileLayout, toggleMode } from "./actions";
 import { clampOffset, dropIndex, reveal } from "./wm";
 import { apps } from "./apps";
@@ -62,7 +62,7 @@ export function NotesList() {
       </header>
       {notes.length ? (
         notes.map((n, i) => (
-          <div key={n.id} className="cc-note" style={{ "--i": i } as CSSProperties}>
+          <div key={n.id} className="cc-note" data-note={n.id} style={{ "--i": i } as CSSProperties}>
             <AppIcon name="settings" />
             <div>
               <strong>{n.title}</strong>
@@ -110,42 +110,108 @@ function NotificationCentre({ open, onClose, settings }: { open: boolean; onClos
   );
 }
 
-/** Quick settings: Wi-Fi, light and dark, lunar dates, sound and theme. */
+type IconName = ComponentProps<typeof UiIcon>["name"];
+
+/** One quick setting that flips on and off. */
+function QsTile({ on, icon, label, onClick, disabled }: { on?: boolean; icon: IconName; label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button type="button" className="cc-tile" aria-pressed={on} disabled={disabled} onClick={onClick}>
+      <span>
+        <UiIcon name={icon} />
+      </span>
+      {label}
+    </button>
+  );
+}
+
+function QsSlider({ label, value, min, max, step, show, onChange }: { label: string; value: number; min: number; max: number; step: number; show: string; onChange: (v: number) => void }) {
+  return (
+    <label className="cc-slider">
+      <span>
+        {label}
+        <b>{show}</b>
+      </span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} style={{ "--v": `${((value - min) / (max - min)) * 100}%` } as CSSProperties} />
+    </label>
+  );
+}
+
+/**
+ * Quick settings: most of Settings within reach of the top bar. Toggles, the window mode and
+ * motion, the glass and size sliders, sound and theme, and a way to all the rest. Its capsule
+ * opens and closes it.
+ */
 function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const t = useT();
   const { volume } = music.useMusic();
-  useOutside(ref, onClose);
-  const dark = effectiveMode(sess.settings) === "dark";
+  useOutside(ref, onClose, true, ".qs-toggle");
+  const s = sess.settings;
+  const set = os.setSettings;
+  const flip = (key: "lunar" | "liquid" | "clock24" | "snapping" | "momentum" | "shake" | "plainCursor" | "serious") => () => set({ [key]: !s[key] });
+  const dark = effectiveMode(s) === "dark";
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
   // Rendered at the root: the menu bar's glass blur would otherwise trap this fixed panel inside it.
   const target = usePortalTarget();
   if (!target) return null;
   return createPortal(
     <div ref={ref} className="cc" role="dialog" aria-label={t("Quick Settings")}>
       <div className="cc-tiles">
-        <button type="button" className="cc-tile" aria-pressed="true" onClick={() => os.notify("Connected to HIVE-NET", "Signal strength: adequate for compliance.")}>
-          <span>
-            <UiIcon name="wifi" />
-          </span>
-          {t("Wi-Fi")}
-        </button>
-        <button type="button" className="cc-tile" aria-pressed={dark} onClick={toggleMode}>
-          <span>
-            <UiIcon name={dark ? "moon" : "sun"} />
-          </span>
-          {dark ? t("Dark") : t("Light")}
-        </button>
-        <button type="button" className="cc-tile" aria-pressed={sess.settings.lunar} onClick={() => os.setSettings({ lunar: !sess.settings.lunar })}>
-          <span>
-            <UiIcon name="calendar" />
-          </span>
-          {t("Lunar calendar")}
-        </button>
+        <QsTile on icon="wifi" label={t("Wi-Fi")} onClick={() => os.notify("Connected to HIVE-NET", "Signal strength: adequate for compliance.")} />
+        <QsTile on={dark} icon={dark ? "moon" : "sun"} label={dark ? t("Dark") : t("Light")} onClick={toggleMode} />
+        <QsTile on={s.lunar} icon="calendar" label={t("Lunar calendar")} onClick={flip("lunar")} />
+        <QsTile on={s.liquid} icon="display" label={t("Liquid glass")} onClick={flip("liquid")} />
+        <QsTile
+          on={s.liquid && s.chrome === "liquid"}
+          disabled={!s.liquid}
+          icon="sidebar"
+          label={t("Liquid windows")}
+          onClick={() => set({ chrome: s.chrome === "liquid" ? "glass" : "liquid" })}
+        />
+        <QsTile on={s.clock24} icon="globe" label={t("24-hour clock")} onClick={flip("clock24")} />
+        <QsTile on={s.snapping} icon="grid" label={t("Snap to edges")} onClick={flip("snapping")} />
+        <QsTile on={s.momentum} icon="info" label={t("Throw windows")} onClick={flip("momentum")} />
+        <QsTile on={s.shake} icon="list" label={t("Shake to tidy")} onClick={flip("shake")} />
+        <QsTile on={s.plainCursor} icon="accessibility" label={t("Plain cursor")} onClick={flip("plainCursor")} />
+        <QsTile on={s.serious} icon="bell" label={t("Serious mode")} onClick={flip("serious")} />
+        <QsTile icon="lock" label={t("Lock")} onClick={() => (onClose(), os.lock())} />
       </div>
-      <label className="cc-slider">
-        <span>{t("Sound")}</span>
-        <input type="range" min={0} max={100} value={Math.round(volume * 100)} onChange={(e) => music.setVolume(Number(e.target.value) / 100)} style={{ "--v": `${volume * 100}%` } as CSSProperties} />
-      </label>
+      <div className="cc-group">
+        <div className="cc-row">
+          <span>{t("Window mode")}</span>
+          <Segmented
+            label={t("Window mode")}
+            value={sess.wm}
+            onChange={(m) => os.setWinMode(m)}
+            options={[
+              { value: "free", label: t("Freestyle") },
+              { value: "tile", label: t("Tiling") },
+              { value: "chain", label: t("Chain") },
+            ]}
+          />
+        </div>
+        <div className="cc-row">
+          <span>{t("Motion")}</span>
+          <Segmented
+            label={t("Motion")}
+            value={s.motion}
+            onChange={(motion) => set({ motion })}
+            options={[
+              { value: "system", label: t("Auto") },
+              { value: "full", label: t("Full") },
+              { value: "reduced", label: t("Less") },
+              { value: "none", label: t("Off") },
+            ]}
+          />
+        </div>
+      </div>
+      <div className="cc-group">
+        <QsSlider label={t("Sound")} value={volume} min={0} max={1} step={0.01} show={pct(volume)} onChange={music.setVolume} />
+        <QsSlider label={t("Transparency")} value={1 - s.glass} min={0} max={1} step={0.02} show={pct(1 - s.glass)} onChange={(v) => set({ glass: Math.round((1 - v) * 100) / 100 })} />
+        <QsSlider label={t("Blur")} value={s.blur} min={0} max={60} step={2} show={`${s.blur}px`} onChange={(blur) => set({ blur })} />
+        <QsSlider label={t("Text size")} value={s.textScale} min={0.85} max={1.3} step={0.05} show={pct(s.textScale)} onChange={(textScale) => set({ textScale })} />
+        <QsSlider label={t("Dock size")} value={s.dockSize} min={36} max={72} step={2} show={`${s.dockSize}px`} onChange={(dockSize) => set({ dockSize })} />
+      </div>
       <div className="cc-themes" role="radiogroup" aria-label={t("Theme")}>
         {themeList.map((th) => (
           // biome-ignore lint/a11y/useSemanticElements: round swatches acting as a radio group
@@ -153,7 +219,7 @@ function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => voi
             key={th.id}
             type="button"
             role="radio"
-            aria-checked={sess.settings.theme === th.id}
+            aria-checked={s.theme === th.id}
             title={`${th.name} · ${th.hue}`}
             aria-label={`${th.name}, ${th.hue}`}
             style={{ background: th.wallpaper }}
@@ -170,7 +236,7 @@ function QuickSettings({ sess, onClose }: { sess: os.Session; onClose: () => voi
         }}
       >
         <UiIcon name="settings" />
-        {t("Settings…")}
+        {t("All Settings…")}
       </button>
     </div>,
     target,
@@ -204,14 +270,16 @@ function StatusArea({ sess, user }: { sess: os.Session; user: os.User }) {
       <button type="button" className="lui-menubar-item" aria-label={t("Search")} onClick={() => os.setOverlay("search")}>
         <UiIcon name="search" />
       </button>
-      <StatusCapsule label={t("Quick Settings")} onClick={() => setQs(!qs)}>
-        <UiIcon name="wifi" />
-        <UiIcon name="volume" />
-        <span className="bat">
-          <UiIcon name="battery" />
-          {battery.level}%
-        </span>
-      </StatusCapsule>
+      <span className="qs-toggle">
+        <StatusCapsule label={t("Quick Settings")} onClick={() => setQs(!qs)}>
+          <UiIcon name="wifi" />
+          <UiIcon name="volume" />
+          <span className="bat">
+            <UiIcon name="battery" />
+            {battery.level}%
+          </span>
+        </StatusCapsule>
+      </span>
       <MenuButton
         className="lui-menubar-item user-menu"
         label={user.name}
@@ -496,6 +564,7 @@ function Icons({ sess }: { sess: os.Session }) {
       className="desk"
       data-drop={drag || undefined}
       onPointerDown={onBandStart}
+      data-band={band ? "" : undefined}
       onContextMenu={(e) => e.target === e.currentTarget && ctx.open(e, deskMenu)}
       onKeyDown={onKey}
       onDragOver={(e) => {
@@ -777,6 +846,14 @@ function DesktopHud({ ws }: { ws: number }) {
 
 export function Desktop({ sess, user }: { sess: os.Session; user: os.User }) {
   const fx = os.useOS((s) => s.fx);
+  // Closing the last Music window ends its session: the player stops and rewinds. Every other app
+  // keeps its state in its window, so closing it already resets it.
+  const hasMusic = sess.windows.some((w) => w.app === "music");
+  const hadMusic = useRef(hasMusic);
+  useEffect(() => {
+    if (hadMusic.current && !hasMusic) music.stop();
+    hadMusic.current = hasMusic;
+  }, [hasMusic]);
   return (
     <div className={`desktop${fx === "meltdown" ? " meltdown" : ""}`} data-liquid={sess.settings.liquid || undefined}>
       <Liquid on={sess.settings.liquid} settings={sess.settings} mode={effectiveMode(sess.settings)}>

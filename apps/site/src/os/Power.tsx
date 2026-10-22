@@ -8,6 +8,7 @@ import { useT } from "./i18n";
 import { DROP_MS, Liquid, WelcomeDrop } from "./Liquid";
 import * as os from "./store";
 import { Avatar, clock, day, LupinMark, useNow } from "./ui";
+import { ThemeScene } from "./Wallpaper";
 
 /** Plays an exit animation for `ms`, then calls `then`. Calling it twice does nothing more. */
 function useLeave(ms: number, then: () => void) {
@@ -91,7 +92,9 @@ export function Greeting({ user, settings, mode, onDone }: { user: os.User; sett
   }, [leave, drop]);
   return (
     <div className="screen greeting" data-leaving={leaving || undefined} data-drop={drop || undefined} data-landed={landed || undefined}>
-      <div className="lui-wallpaper" />
+      <div className="lui-wallpaper">
+        <ThemeScene />
+      </div>
       <Liquid on={drop} settings={settings} mode={mode} blur={28}>
         {drop && <WelcomeDrop leaving={leaving} onLanded={land} />}
         <div className="greeting-card">
@@ -138,7 +141,9 @@ export function UserPicker() {
 
   return (
     <div className="screen picker">
-      <div className="lui-wallpaper" />
+      <div className="lui-wallpaper">
+        <ThemeScene />
+      </div>
       <div className="picker-clock">
         <div className="picker-date">{day(now, { weekday: "long", day: "numeric", month: "long" })}</div>
         <div className="picker-time">{clock(now)}</div>
@@ -217,7 +222,9 @@ export function PhoneLock({ onUnlock }: { onUnlock: () => void }) {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onUnlock()}
       onDoubleClick={onUnlock}
     >
-      <div className="lui-wallpaper" />
+      <div className="lui-wallpaper">
+        <ThemeScene />
+      </div>
       <div className="picker-clock">
         <div className="picker-date">{day(now, { weekday: "long", day: "numeric", month: "long" })}</div>
         <div className="picker-time">{clock(now)}</div>
@@ -246,7 +253,9 @@ export function Saver({ onWake }: { onWake: () => void }) {
   const now = useNow();
   return (
     <div className="screen saver" data-leaving={leaving || undefined} aria-label="Screensaver. Move the mouse to return.">
-      <div className="lui-wallpaper" />
+      <div className="lui-wallpaper">
+        <ThemeScene />
+      </div>
       <div className="saver-clock">{clock(now)}</div>
     </div>
   );

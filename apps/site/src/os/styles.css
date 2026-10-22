@@ -29,17 +29,93 @@ body {
   --line: var(--lui-sep);
   --line-strong: var(--lui-muted);
   --icon: 60px;
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='26' viewBox='0 0 24 26'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z' fill='%23000' stroke='%23fff' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, default;
+  cursor: var(--cur-arrow);
+}
+/* ---- cursors: one drawn set, black with a white rim, the logo's red where it says something ----
+   Every element inherits the cursor unless it is one of the states below, so stray "default"s in
+   component styles cannot bring the system arrow back. Plain cursor and touch shells swap the set
+   for the system's own. */
+.os {
+  --cur-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3C/svg%3E") 5 3, default;
+  --cur-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Crect x='8.5' y='2.5' width='3.4' height='11' rx='1.7'/%3E%3Crect x='11.6' y='8.5' width='3.2' height='6' rx='1.6'/%3E%3Crect x='14.5' y='9.3' width='3.2' height='5.4' rx='1.6'/%3E%3Crect x='17.4' y='10.3' width='3' height='4.6' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11.9' height='8.6' rx='3.6'/%3E%3Crect x='4.4' y='11.6' width='3.4' height='7.6' rx='1.7' transform='rotate(-35 6.1 15.4)'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Crect x='8.5' y='2.5' width='3.4' height='11' rx='1.7'/%3E%3Crect x='11.6' y='8.5' width='3.2' height='6' rx='1.6'/%3E%3Crect x='14.5' y='9.3' width='3.2' height='5.4' rx='1.6'/%3E%3Crect x='17.4' y='10.3' width='3' height='4.6' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11.9' height='8.6' rx='3.6'/%3E%3Crect x='4.4' y='11.6' width='3.4' height='7.6' rx='1.7' transform='rotate(-35 6.1 15.4)'/%3E%3C/g%3E%3C/svg%3E") 10 3, pointer;
+  --cur-grab: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Crect x='6.8' y='6' width='3' height='9' rx='1.5'/%3E%3Crect x='9.9' y='3.6' width='3' height='11' rx='1.5'/%3E%3Crect x='13' y='4.4' width='3' height='10.5' rx='1.5'/%3E%3Crect x='16.1' y='6.4' width='3' height='9' rx='1.5'/%3E%3Crect x='6.8' y='11.5' width='12.3' height='9.5' rx='4'/%3E%3Crect x='3.2' y='11' width='3.2' height='7' rx='1.6' transform='rotate(-30 4.8 14.5)'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Crect x='6.8' y='6' width='3' height='9' rx='1.5'/%3E%3Crect x='9.9' y='3.6' width='3' height='11' rx='1.5'/%3E%3Crect x='13' y='4.4' width='3' height='10.5' rx='1.5'/%3E%3Crect x='16.1' y='6.4' width='3' height='9' rx='1.5'/%3E%3Crect x='6.8' y='11.5' width='12.3' height='9.5' rx='4'/%3E%3Crect x='3.2' y='11' width='3.2' height='7' rx='1.6' transform='rotate(-30 4.8 14.5)'/%3E%3C/g%3E%3C/svg%3E") 12 12, grab;
+  --cur-grabbing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Crect x='7' y='8.4' width='3' height='5' rx='1.5'/%3E%3Crect x='10.1' y='7.6' width='3' height='5.6' rx='1.5'/%3E%3Crect x='13.2' y='7.8' width='3' height='5.4' rx='1.5'/%3E%3Crect x='16.3' y='8.6' width='3' height='5' rx='1.5'/%3E%3Crect x='7' y='10.6' width='12.3' height='9.4' rx='4'/%3E%3Crect x='4.4' y='11.8' width='4' height='3' rx='1.5'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Crect x='7' y='8.4' width='3' height='5' rx='1.5'/%3E%3Crect x='10.1' y='7.6' width='3' height='5.6' rx='1.5'/%3E%3Crect x='13.2' y='7.8' width='3' height='5.4' rx='1.5'/%3E%3Crect x='16.3' y='8.6' width='3' height='5' rx='1.5'/%3E%3Crect x='7' y='10.6' width='12.3' height='9.4' rx='4'/%3E%3Crect x='4.4' y='11.8' width='4' height='3' rx='1.5'/%3E%3C/g%3E%3C/svg%3E") 12 12, grabbing;
+  --cur-text: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4.5h6M9 19.5h6M12 4.5v15' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M9 4.5h6M9 19.5h6M12 4.5v15' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, text;
+  --cur-wait: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23fff' stroke-width='5.6'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%231d1d1f' stroke-width='3'/%3E%3Cpath d='M12 4a8 8 0 0 1 8 8' fill='none' stroke='%23e5484d' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, wait;
+  --cur-progress: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3Ccircle cx='23' cy='23' r='5' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Ccircle cx='23' cy='23' r='5' fill='none' stroke='%231d1d1f' stroke-width='2.4'/%3E%3Cpath d='M23 18a5 5 0 0 1 5 5' fill='none' stroke='%23e5484d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 5 3, progress;
+  --cur-help: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='%23fff' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3Cg fill='%231d1d1f'%3E%3Cpath d='M5 3.5v17.2l4.1-3.9 2.7 6.2 2.9-1.3-2.7-6.1h5.7z'/%3E%3C/g%3E%3Ccircle cx='23' cy='23' r='7.3' fill='%23fff'/%3E%3Ccircle cx='23' cy='23' r='6' fill='%23e5484d'/%3E%3Cpath d='M20.9 21.3a2.1 2.1 0 1 1 3 1.9c-.6.3-.9.8-.9 1.4v.3M23 27.2v.1' fill='none' stroke='%23fff' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E") 5 3, help;
+  --cur-no: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23fff' stroke-width='5.2'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%231d1d1f' stroke-width='2.6'/%3E%3Cpath d='M6.6 17.4 17.4 6.6' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M6.6 17.4 17.4 6.6' stroke='%23e5484d' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, not-allowed;
+  --cur-move: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, move;
+  --cur-ew: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, ew-resize;
+  --cur-ns: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' transform='rotate(90 12 12)'%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, ns-resize;
+  --cur-nwse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' transform='rotate(45 12 12)'%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, nwse-resize;
+  --cur-nesw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' transform='rotate(-45 12 12)'%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M3.5 12h17M3.5 12 7 8.5M3.5 12 7 15.5M20.5 12 17 8.5M20.5 12 17 15.5' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 12 12, nesw-resize;
+  --cur-cross: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v6M12 15v6M3 12h6M15 12h6' stroke='%23fff' stroke-width='4.6'/%3E%3Cpath d='M12 3v6M12 15v6M3 12h6M15 12h6' stroke='%231d1d1f' stroke-width='2'/%3E%3C/g%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%23e5484d'/%3E%3C/svg%3E") 12 12, crosshair;
 }
 .os[data-cursor="plain"],
 .os[data-shell="phone"],
 .os[data-shell="tablet"] {
-  cursor: default;
+  --cur-arrow: default;
+  --cur-hand: pointer;
+  --cur-grab: grab;
+  --cur-grabbing: grabbing;
+  --cur-text: text;
+  --cur-wait: wait;
+  --cur-progress: progress;
+  --cur-help: help;
+  --cur-no: not-allowed;
+  --cur-move: move;
+  --cur-ew: ew-resize;
+  --cur-ns: ns-resize;
+  --cur-nwse: nwse-resize;
+  --cur-nesw: nesw-resize;
+  --cur-cross: crosshair;
 }
-.os input,
-.os textarea,
-.os [contenteditable] {
-  cursor: text;
+.os[data-shell] * {
+  cursor: inherit;
+}
+.os[data-shell] :is(a[href], button, summary, select, label[for], [role="button"], [role="link"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="tab"], [role="radio"], [role="switch"], [role="option"], [role="checkbox"], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], .lui-dock-item, .lui-menu-item, .lui-menubar-item, .launcher-app, .theme-card, .cc-tile) {
+  cursor: var(--cur-hand);
+}
+.os[data-shell] :is([data-lui-drag], .hero-hit) {
+  cursor: var(--cur-grab);
+}
+.os[data-shell] .lui-window[data-moving] :is([data-lui-drag], [data-lui-drag] *) {
+  cursor: var(--cur-grabbing);
+}
+.os[data-shell] :is(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="password"], input[type="url"], input[type="number"], input[type="tel"], textarea, [contenteditable="true"], [contenteditable=""], .terminal) {
+  cursor: var(--cur-text);
+}
+.os[data-shell] :is([aria-busy="true"], .app-loading, .spinner) {
+  cursor: var(--cur-wait);
+}
+.os[data-shell] :is(.boot, .greeting) {
+  cursor: var(--cur-progress);
+}
+.os[data-shell] :is(abbr[title], [data-help], .helper-bee > svg) {
+  cursor: var(--cur-help);
+}
+.os[data-shell] :is(:disabled, [aria-disabled="true"]),
+.os[data-shell] :is(:disabled, [aria-disabled="true"]) * {
+  cursor: var(--cur-no);
+}
+.os[data-shell] .lui-grip:is([data-edge="n"], [data-edge="s"]) {
+  cursor: var(--cur-ns);
+}
+.os[data-shell] .lui-grip:is([data-edge="e"], [data-edge="w"]) {
+  cursor: var(--cur-ew);
+}
+.os[data-shell] .lui-grip:is([data-edge="nw"], [data-edge="se"]) {
+  cursor: var(--cur-nwse);
+}
+.os[data-shell] .lui-grip:is([data-edge="ne"], [data-edge="sw"]) {
+  cursor: var(--cur-nesw);
+}
+.os[data-shell] .desk[data-band] {
+  cursor: var(--cur-cross);
+}
+.os[data-shell] .saver {
+  cursor: none;
 }
 .sr-only {
   position: absolute;
@@ -670,7 +746,7 @@ body {
   z-index: 8800;
   top: 32px;
   right: 8px;
-  width: 320px;
+  width: 348px;
   max-height: calc(100% - 44px);
   overflow: auto;
   display: grid;
@@ -732,14 +808,40 @@ body {
   font-size: 12px;
   font-weight: 600;
 }
+.cc-slider > span {
+  display: flex;
+  justify-content: space-between;
+}
+.cc-slider b {
+  font-weight: 500;
+  color: var(--lui-muted);
+}
+.cc-group {
+  display: grid;
+  gap: 12px;
+}
+.cc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cc-tile:disabled {
+  opacity: 0.45;
+}
+/* the capsule wrapper only marks the toggle; it takes no room of its own */
+.qs-toggle {
+  display: contents;
+}
 .cc-slider input {
   appearance: none;
   width: 100%;
   height: 22px;
   margin: 0;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--lui-ink) var(--v), var(--lui-hover) var(--v));
-  opacity: 0.85;
+  background: linear-gradient(90deg, var(--lui-accent) var(--v), color-mix(in srgb, var(--lui-ink) 14%, transparent) var(--v));
 }
 .cc-slider input::-webkit-slider-thumb {
   appearance: none;

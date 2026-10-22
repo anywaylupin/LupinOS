@@ -114,6 +114,13 @@ export function pause() {
 
 export const toggle = () => (state.playing ? pause() : play());
 
+/** Stops and rewinds to the first track: closing the Music app ends its session. */
+export function stop() {
+  pause();
+  step = 0;
+  set({ index: 0, elapsed: 0 });
+}
+
 function jump(index: number) {
   const was = state.playing;
   pause();

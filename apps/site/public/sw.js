@@ -1,6 +1,6 @@
 // LupinOS service worker. Pages are network-first so new builds show up; everything else
 // (hashed scripts, styles, fonts, icons) is cache-first. After one visit the OS works offline.
-const CACHE = "lupinos-v2";
+const CACHE = "lupinos-v3";
 const SHELL = ["/", "/plain", "/favicon.svg?v=2", "/apple-touch-icon.png", "/resume.pdf"];
 
 self.addEventListener("install", (e) => {
@@ -19,7 +19,8 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
-  if (req.method !== "GET" || url.origin !== location.origin) return;
+  // Dev-server modules are never cached: a worker left by a preview must not serve them stale.
+  if (req.method !== "GET" || url.origin !== location.origin || /^\/(@|src\/|node_modules\/)/.test(url.pathname)) return;
   const put = (res) => {
     if (res.ok) {
       const copy = res.clone();

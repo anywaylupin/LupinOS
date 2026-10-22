@@ -52,10 +52,14 @@ export function LupinMark({ size = 96, animate = false }: { size?: number; anima
 }
 
 /** Calls `onOut` on a click outside `ref` or on Escape. Used by popovers that are not menus. */
-export function useOutside(ref: { current: HTMLElement | null }, onOut: () => void, active = true) {
+export function useOutside(ref: { current: HTMLElement | null }, onOut: () => void, active = true, ignore?: string) {
   useEffect(() => {
     if (!active) return;
-    const down = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && onOut();
+    // `ignore` is the popover's own toggle: its click closes it, so a press there must not close it first.
+    const down = (e: PointerEvent) => {
+      const t = e.target as Element;
+      if (!ref.current?.contains(t) && !(ignore && t.closest?.(ignore))) onOut();
+    };
     const key = (e: KeyboardEvent) => e.key === "Escape" && onOut();
     // Next tick, so the click that opened it does not close it again.
     const t = setTimeout(() => {
@@ -67,7 +71,7 @@ export function useOutside(ref: { current: HTMLElement | null }, onOut: () => vo
       removeEventListener("pointerdown", down, true);
       removeEventListener("keydown", key);
     };
-  }, [ref, onOut, active]);
+  }, [ref, onOut, active, ignore]);
 }
 
 /** Settings of whoever is signed in, or the last user before anyone is. */

@@ -6,6 +6,7 @@ import { deskArea, GAP } from "./actions";
 import { closeDodges } from "./fun";
 import type { WinMode } from "./wm";
 import { type AppProps, apps } from "./apps";
+import { LiquidWindow, useLiquid } from "./Liquid";
 import * as os from "./store";
 import type { Win } from "./store";
 
@@ -51,6 +52,7 @@ type Props = {
 export function DesktopWindow({ win, focused, settings, tag, mode, slot, bounds, onDrop }: Props) {
   const def = apps[win.app];
   const free = mode === "free";
+  const liquid = useLiquid() && settings.chrome === "liquid";
   const dockTarget = useCallback(() => dockRect(`win:${win.id}`) ?? dockRect(win.app) ?? dockRect("launcher"), [win.id, win.app]);
   return (
     <Window
@@ -67,6 +69,9 @@ export function DesktopWindow({ win, focused, settings, tag, mode, slot, bounds,
       sidebar={def.Sidebar && <AppPart part={def.Sidebar} win={win} quiet />}
       sidebarWidth={def.sidebarWidth}
       toolbar={def.Toolbar && <AppPart part={def.Toolbar} win={win} quiet />}
+      // the id, so the right-click menu knows which window it is on
+      className={`w-${win.id}`}
+      backdrop={liquid && !win.min ? <LiquidWindow radius={settings.radius} /> : undefined}
       snapping={settings.snapping && free}
       momentum={settings.momentum && free}
       resizable={mode !== "tile"}

@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "lupinos", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@lupinos/site", "preview", "--port", "4321"], "port": 4321 }
+    { "name": "lupinos", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@lupinos/site", "preview", "--port", "4321"], "port": 4321 },
+    { "name": "lupinos-dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@lupinos/site", "dev", "--port", "4330"], "port": 4330 }
   ]
 }

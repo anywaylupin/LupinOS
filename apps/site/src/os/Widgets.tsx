@@ -364,9 +364,10 @@ function Frame({ w, onMenu }: { w: os.Widget; onMenu: (e: React.MouseEvent, w: o
         {TILES[w.kind](w)}
     </>
   );
-  // In the liquid layer the widget is a plasma surface: neighbours closer than the blend fuse.
+  // In the liquid layer the widget is a plasma surface. Each stays its own clean rounded shape:
+  // fused neighbours bulge into lumps where they meet, and the border should read smooth.
   return liquid ? (
-    <Plasma as="section" ref={ref} lean={false} radius={16} {...props}>
+    <Plasma as="section" ref={ref} lean={false} fuse={false} radius={16} {...props}>
       {body}
     </Plasma>
   ) : (

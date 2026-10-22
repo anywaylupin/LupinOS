@@ -1,6 +1,6 @@
 // Everything that floats above the windows: search, shortcuts, the window switcher, the app
 // launcher, notifications, alert dialogs and the glyph rain.
-import { AppIcon, CommandPalette, type PaletteItem, Toasts, UiIcon } from "@lupinos/ui";
+import { AppIcon, CommandPalette, type MenuItem, type PaletteItem, Toasts, UiIcon, useContextMenu } from "@lupinos/ui";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { commands, openNode, shortcuts } from "./actions";
 import { apps } from "./apps";
@@ -144,6 +144,7 @@ function Launcher() {
             key={a.id}
             type="button"
             className="launcher-app"
+            data-app={a.id}
             style={{ "--i": i } as CSSProperties}
             onClick={(e) => {
               os.setOverlay(null);
@@ -164,12 +165,20 @@ function HelperBee() {
   const close = () => os.useOS.setState({ prank: null });
   return (
     <aside className="helper-bee" role="dialog" aria-label="Helper bee">
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <ellipse cx="24" cy="28" rx="13" ry="10" fill="#f5c542" />
-        <path d="M19 19v18M27 19v18" stroke="#1f1a14" strokeWidth="4" />
-        <ellipse cx="17" cy="15" rx="7" ry="5" fill="rgb(255 255 255 / 0.8)" />
-        <ellipse cx="30" cy="15" rx="7" ry="5" fill="rgb(255 255 255 / 0.8)" />
-        <circle cx="34" cy="26" r="2" fill="#1f1a14" />
+      {/* The block bee: rounded bars like the LupinOS mark, the red square for an eye, an L for an antenna. */}
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <g className="bee-wing">
+          <rect x="19" y="5" width="14" height="21" rx="6" transform="rotate(-18 26 15.5)" />
+        </g>
+        <g className="bee-wing">
+          <rect x="31" y="7" width="13" height="19" rx="6" transform="rotate(16 37.5 16.5)" />
+        </g>
+        <path className="bee-ink" d="M5 38 11 35.5v5z" />
+        <rect x="10" y="25" width="34" height="26" rx="9" fill="#f5c542" />
+        <path d="M20 25h5.5v26H20zM30 25h5.5v26H30z" fill="#1f1a14" />
+        <rect x="42" y="27" width="16" height="20" rx="5" fill="#1f1a14" stroke="#f5c542" strokeWidth="1.2" />
+        <rect x="50" y="32" width="4.5" height="4.5" rx="1" fill="#e5484d" />
+        <path className="bee-antenna" d="M50 27 53 20h3.5" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div>
         <strong>It looks like you are hiring.</strong>
@@ -273,12 +282,82 @@ function GlyphRain() {
   return <canvas ref={ref} className="fx" aria-hidden="true" onClick={() => os.useOS.setState({ fx: null })} />;
 }
 
+/** What a right-click offers where nothing more specific has a menu of its own. */
+function menuFor(el: Element, t: (key: string, vars?: Record<string, string>) => string): MenuItem[] {
+  const picked = getSelection()?.toString() ?? "";
+  const items: MenuItem[] = picked ? [{ label: t("Copy"), onSelect: () => void navigator.clipboard?.writeText(picked) }, "separator"] : [];
+  const app = el.closest<HTMLElement>("[data-app]")?.dataset.app;
+  const note = el.closest<HTMLElement>("[data-note], .lui-toast[data-id]");
+  const win = el.closest(".lui-window");
+  // a window's own controls, so the menu closes, minimises and zooms with the same motion they do
+  const press = (kind: string) => () => win?.querySelector<HTMLButtonElement>(`.lui-control[data-kind="${kind}"]`)?.click();
+  if (app && apps[app]) {
+    const def = apps[app];
+    items.push(
+      { label: t("Open"), onSelect: () => (os.setOverlay(null), os.open(app)) },
+      { label: t("About {name}", { name: t(def.name) }), onSelect: () => os.notify(t(def.name), def.description) },
+    );
+  } else if (note) {
+    const id = note.dataset.note ?? note.dataset.id ?? "";
+    items.push({ label: t("Dismiss"), onSelect: () => os.removeNote(id) }, { label: t("Clear All"), onSelect: os.clearNotes });
+  } else if (el.closest(".lui-calendar, .nc-today")) {
+    items.push(
+      { label: t("Copy Today's Date"), onSelect: () => void navigator.clipboard?.writeText(new Date().toLocaleDateString(document.documentElement.lang || undefined, { dateStyle: "full" })) },
+      { label: t("Date and Region Settings…"), onSelect: () => os.open("settings", { arg: "language" }) },
+    );
+  } else if (el.closest(".lui-drawer")) {
+    items.push({ label: t("Clear All"), onSelect: os.clearNotes }, { label: t("Settings…"), onSelect: () => os.open("settings") });
+  } else if (win) {
+    items.push(
+      { label: t("Minimise"), onSelect: press("minimize") },
+      { label: win.hasAttribute("data-maximized") ? t("Restore") : t("Maximise"), onSelect: press(win.hasAttribute("data-maximized") ? "restore" : "maximize") },
+      "separator",
+      { label: t("Close"), onSelect: press("close") },
+    );
+  } else if (el.closest(".lui-menubar")) {
+    items.push(
+      { label: t("Settings…"), onSelect: () => os.open("settings") },
+      { label: t("Keyboard Shortcuts"), onSelect: () => os.setOverlay("shortcuts") },
+      "separator",
+      { label: t("Lock Screen"), onSelect: os.lock },
+    );
+  } else {
+    items.push(
+      { label: t("All Apps"), onSelect: () => os.setOverlay("launcher") },
+      { label: t("Change Wallpaper…"), onSelect: () => os.open("settings", { arg: "wallpaper" }) },
+      { label: t("Settings…"), onSelect: () => os.open("settings") },
+    );
+  }
+  return items;
+}
+
+/**
+ * Right-click anywhere. The desktop, dock, widgets and Files open menus of their own; everything
+ * else lands here, with a menu that fits what was clicked. Text fields keep the browser's menu,
+ * for paste and spelling.
+ */
+function GlobalMenu() {
+  const t = useT();
+  const { open, menu } = useContextMenu();
+  useEffect(() => {
+    const on = (e: MouseEvent) => {
+      const el = e.target as Element | null;
+      if (e.defaultPrevented || !el?.closest || el.closest("input, textarea, [contenteditable='true']")) return;
+      open(e, menuFor(el, t));
+    };
+    addEventListener("contextmenu", on);
+    return () => removeEventListener("contextmenu", on);
+  }, [open, t]);
+  return menu;
+}
+
 export function Overlays() {
   const overlay = os.useOS((s) => s.overlay);
   const fx = os.useOS((s) => s.fx);
   const prank = os.useOS((s) => s.prank);
   return (
     <>
+      <GlobalMenu />
       {prank === "helper-bee" && <HelperBee />}
       <Search />
       {overlay === "shortcuts" && <Shortcuts />}
