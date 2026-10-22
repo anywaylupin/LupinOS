@@ -4,6 +4,7 @@ import { dockRect, Window } from "@lupinos/ui";
 import { Component, type ComponentType, type ReactNode, Suspense, useCallback } from "react";
 import { deskArea, GAP } from "./actions";
 import { closeDodges } from "./fun";
+import { useT } from "./i18n";
 import type { WinMode } from "./wm";
 import { type AppProps, apps } from "./apps";
 import { LiquidWindow, useLiquid } from "./Liquid";
@@ -54,9 +55,10 @@ export function DesktopWindow({ win, focused, settings, tag, mode, slot, bounds,
   const free = mode === "free";
   const liquid = useLiquid() && settings.chrome === "liquid";
   const dockTarget = useCallback(() => dockRect(`win:${win.id}`) ?? dockRect(win.app) ?? dockRect("launcher"), [win.id, win.app]);
+  const t = useT();
   return (
     <Window
-      title={win.title}
+      title={t(win.title)}
       tag={tag}
       rect={slot ?? win}
       zIndex={win.z}

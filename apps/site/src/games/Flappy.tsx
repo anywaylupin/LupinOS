@@ -158,7 +158,7 @@ export default function Flappy({ focused }: GameProps) {
         <canvas ref={canvas} aria-label={`Flappy bee. Score ${score}.`} role="img" />
         <Paused show={!focused && status === "play"} />
         {status === "ready" && (
-          <Panel title="Flappy Bee">
+          <Panel title="Flappy">
             <p>Space, Up or a tap to flap. Mind the hive.</p>
           </Panel>
         )}

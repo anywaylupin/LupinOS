@@ -398,10 +398,11 @@ export default function Settings({ win }: AppProps) {
                   { value: "en", label: "English" },
                   { value: "zh-Hans", label: "简体中文" },
                   { value: "zh-Hant", label: "繁體中文" },
+                  { value: "vi", label: "Tiếng Việt" },
                 ]}
               />
             </Row>
-            <Row label={`${t("Lunar calendar")} · Âm lịch`} hint={t("Show lunar dates in the calendar")}>
+            <Row label={s.lang === "vi" ? t("Lunar calendar") : `${t("Lunar calendar")} · Âm lịch`} hint={t("Show lunar dates in the calendar")}>
               <Switch checked={s.lunar} onChange={(e) => set({ lunar: e.target.checked })} aria-label={t("Lunar calendar")} />
             </Row>
             <Row label={t("24-hour time")}>

@@ -36,6 +36,7 @@ const CITIES = [
 ];
 
 function ClockTile({ w }: { w: os.Widget }) {
+  const t = useT();
   const now = useNow();
   const zone = CITIES.find((c) => c.tz === w.zone);
   const deg = (v: number, max: number) => `rotate(${(v / max) * 360}deg)`;
@@ -47,7 +48,7 @@ function ClockTile({ w }: { w: os.Widget }) {
     os.updateWidget(w.id, { zone: i + 1 < CITIES.length ? CITIES[i + 1].tz : undefined });
   };
   return (
-    <button type="button" className="clock-tile" aria-label={`${clock(now)}. Add a second city.`} onClick={next}>
+    <button type="button" className="clock-tile" aria-label={`${clock(now)}. ${t("Add a second city.")}`} onClick={next}>
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="46" className="face" />
         {Array.from({ length: 12 }, (_, i) => (
@@ -63,7 +64,7 @@ function ClockTile({ w }: { w: os.Widget }) {
         <b>{clock(now)}</b>
         {zone && (
           <small>
-            {zone.name} {now.toLocaleTimeString([], { timeZone: zone.tz, hour: "2-digit", minute: "2-digit" })}
+            {t(zone.name)} {now.toLocaleTimeString([], { timeZone: zone.tz, hour: "2-digit", minute: "2-digit" })}
           </small>
         )}
       </span>
@@ -72,7 +73,7 @@ function ClockTile({ w }: { w: os.Widget }) {
 }
 
 const WEATHER: [number, string][] = [
-  [0, "Clear"],
+  [0, "Clear sky"],
   [3, "Partly cloudy"],
   [48, "Fog"],
   [57, "Drizzle"],
@@ -85,6 +86,7 @@ const OMENS = ["Acid rain 40%", "Smog advisory: breathe politely", "UV index: co
 let weatherCache: { at: number; temp: number; text: string } | null = null;
 
 function WeatherTile() {
+  const t = useT();
   const [data, setData] = useState(weatherCache);
   const [state, setState] = useState<"idle" | "asking" | "error">("idle");
   const omen = OMENS[new Date().getHours() % OMENS.length];
@@ -113,19 +115,19 @@ function WeatherTile() {
       <div className="weather-now">
         <b>{data ? `${data.temp}°` : "23°"}</b>
         <span>
-          <strong>{data ? "Your location" : "Hive City"}</strong>
-          <small>{data ? data.text : "Overcast, as scheduled"}</small>
+          <strong>{t(data ? "Your location" : "Hive City")}</strong>
+          <small>{t(data ? data.text : "Overcast, as scheduled")}</small>
         </span>
       </div>
-      <p className="omen">{omen}</p>
+      <p className="omen">{t(omen)}</p>
       {!data && (
         <button type="button" className="lui-button" data-variant="plain" onClick={locate} disabled={state === "asking"}>
-          {state === "asking" ? "Asking…" : state === "error" ? "Location unavailable" : "Use my location"}
+          {t(state === "asking" ? "Asking…" : state === "error" ? "Location unavailable" : "Use my location")}
         </button>
       )}
       {data && (
         <a className="credit" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
-          Weather data by Open-Meteo.com
+          {t("Weather data by Open-Meteo.com")}
         </a>
       )}
     </div>
@@ -133,19 +135,20 @@ function WeatherTile() {
 }
 
 function NoteTile({ w }: { w: os.Widget }) {
+  const t = useT();
   const [text, setText] = useState(w.text ?? "");
-  const t = useRef(0);
+  const timer = useRef(0);
   return (
     <textarea
       className="note-tile"
-      aria-label="Sticky note"
+      aria-label={t("Sticky note")}
       value={text}
-      placeholder="Write something…"
+      placeholder={t("Write something…")}
       onChange={(e) => {
         setText(e.target.value);
-        clearTimeout(t.current);
+        clearTimeout(timer.current);
         const v = e.target.value;
-        t.current = window.setTimeout(() => os.updateWidget(w.id, { text: v }), 400);
+        timer.current = window.setTimeout(() => os.updateWidget(w.id, { text: v }), 400);
       }}
     />
   );
@@ -170,6 +173,7 @@ function MusicTile() {
 }
 
 function MonitorTile() {
+  const t = useT();
   const [fps, setFps] = useState(60);
   const [cpu, setCpu] = useState<number[]>(() => Array(24).fill(12));
   const [honey, setHoney] = useState<number[]>(() => Array(24).fill(40));
@@ -206,36 +210,37 @@ function MonitorTile() {
       </svg>
       <div className="monitor-legend">
         <span className="cpu">CPU {Math.round(cpu.at(-1) ?? 0)}%</span>
-        <span className="honey">Honey {Math.round(honey.at(-1) ?? 0)}%</span>
+        <span className="honey">{t("Honey")} {Math.round(honey.at(-1) ?? 0)}%</span>
       </div>
     </div>
   );
 }
 
 function FocusTile() {
+  const t = useT();
   const [left, setLeft] = useState(25 * 60);
   const [running, setRunning] = useState(false);
   useEffect(() => {
     emit({ type: "focus", running });
     if (!running) return;
-    const t = setInterval(() => setLeft((v) => (v <= 1 ? 0 : v - 1)), 1000);
-    return () => clearInterval(t);
+    const tick = setInterval(() => setLeft((v) => (v <= 1 ? 0 : v - 1)), 1000);
+    return () => clearInterval(tick);
   }, [running]);
   useEffect(() => {
     if (left === 0 && running) {
       setRunning(false);
-      os.notify("Focus session complete", "Productivity has been logged with the hive.");
+      os.notify(t("Focus session complete"), t("Productivity has been logged with the hive."));
     }
-  }, [left, running]);
+  }, [left, running, t]);
   return (
     <div className="focus-tile">
       <b>{fmtTime(left)}</b>
       <div>
         <button type="button" className="lui-button" data-variant="primary" onClick={() => setRunning(!running)}>
-          {running ? "Pause" : left < 25 * 60 ? "Resume" : "Start"}
+          {t(running ? "Pause" : left < 25 * 60 ? "Continue" : "Start")}
         </button>
         <button type="button" className="lui-button" data-variant="plain" onClick={() => (setRunning(false), setLeft(25 * 60))}>
-          Reset
+          {t("Reset")}
         </button>
       </div>
     </div>
@@ -254,26 +259,28 @@ const FORTUNES = [
 ];
 
 function FortuneTile() {
+  const t = useT();
   const [i, setI] = useState(() => Math.floor(Math.random() * FORTUNES.length));
   return (
     <button type="button" className="fortune-tile" onClick={() => setI((i + 1) % FORTUNES.length)}>
-      <q>{FORTUNES[i]}</q>
-      <small>Click for another</small>
+      <q>{t(FORTUNES[i])}</q>
+      <small>{t("Click for another")}</small>
     </button>
   );
 }
 
 function CounterTile() {
+  const t = useT();
   const visits = os.useOS((s) => s.visits);
   return (
     <div className="counter-tile">
-      <div className="odometer" aria-label={`${visits} visits on this device`}>
+      <div className="odometer" aria-label={t("{n} visits on this device", { n: String(visits) })}>
         {String(visits).padStart(6, "0").split("").map((d, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: digits are positions
           <span key={i}>{d}</span>
         ))}
       </div>
-      <small>Visits on this device. Nothing leaves it.</small>
+      <small>{t("Visits on this device. Nothing leaves it.")}</small>
     </div>
   );
 }
@@ -310,7 +317,8 @@ const TILES: Record<os.WidgetKind, (w: os.Widget) => ReactNode> = {
 function Frame({ w, onMenu }: { w: os.Widget; onMenu: (e: React.MouseEvent, w: os.Widget) => void }) {
   const ref = useRef<HTMLElement>(null);
   const liquid = useLiquid();
-  const name = WIDGET_KINDS.find((k) => k.kind === w.kind)?.name ?? w.kind;
+  const t = useT();
+  const name = t(WIDGET_KINDS.find((k) => k.kind === w.kind)?.name ?? w.kind);
   const start = (e: RPointerEvent<HTMLElement>) => {
     if (e.button !== 0 || (e.target as HTMLElement).closest(INTERACTIVE)) return;
     const el = ref.current;
@@ -379,12 +387,13 @@ function Frame({ w, onMenu }: { w: os.Widget; onMenu: (e: React.MouseEvent, w: o
 
 export function Widgets({ sess }: { sess: os.Session }) {
   const ctx = useContextMenu();
+  const t = useT();
   const menu = (e: React.MouseEvent, w: os.Widget) =>
     ctx.open(e, [
-      { label: w.big ? "Make Smaller" : "Make Larger", onSelect: () => os.updateWidget(w.id, { big: !w.big }) },
-      { label: "Add Widgets…", onSelect: () => os.setOverlay("widgets") },
+      { label: t(w.big ? "Make Smaller" : "Make Larger"), onSelect: () => os.updateWidget(w.id, { big: !w.big }) },
+      { label: t("Add Widgets…"), onSelect: () => os.setOverlay("widgets") },
       "separator",
-      { label: "Remove Widget", onSelect: () => os.removeWidget(w.id) },
+      { label: t("Remove Widget"), onSelect: () => os.removeWidget(w.id) },
     ]);
   return (
     <div className="widgets">
@@ -399,13 +408,14 @@ export function Widgets({ sess }: { sess: os.Session }) {
 /** The gallery: every kind of widget, with an Add button. */
 export function WidgetGallery() {
   const sess = os.useSession();
+  const t = useT();
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside the sheet closes it
     <div className="scrim" onPointerDown={(e) => e.target === e.currentTarget && os.setOverlay(null)}>
-      <div className="sheet gallery" role="dialog" aria-label="Widgets">
+      <div className="sheet gallery" role="dialog" aria-label={t("Widgets")}>
         <header>
-          <h2>Widgets</h2>
-          <button type="button" className="lui-button" data-variant="plain" data-icon aria-label="Close" onClick={() => os.setOverlay(null)}>
+          <h2>{t("Widgets")}</h2>
+          <button type="button" className="lui-button" data-variant="plain" data-icon aria-label={t("Close")} onClick={() => os.setOverlay(null)}>
             <UiIcon name="close" />
           </button>
         </header>
@@ -414,10 +424,10 @@ export function WidgetGallery() {
             const count = sess?.widgets.filter((w) => w.kind === k.kind).length ?? 0;
             return (
               <div key={k.kind} className="gallery-item">
-                <strong>{k.name}</strong>
-                <p>{k.blurb}</p>
+                <strong>{t(k.name)}</strong>
+                <p>{t(k.blurb)}</p>
                 <button type="button" className="lui-button" data-variant={count ? undefined : "primary"} onClick={() => os.addWidget(k.kind)}>
-                  {count ? `Add another (${count})` : "Add"}
+                  {count ? t("Add another ({count})", { count: String(count) }) : t("Add")}
                 </button>
               </div>
             );

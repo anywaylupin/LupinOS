@@ -140,7 +140,8 @@ const density = () => (typeof devicePixelRatio === "number" ? Math.min(2, Math.m
  * inside the window (CSS sets its inset), so it follows every drag, resize and flight.
  */
 export function LiquidWindow({ radius }: { radius: number }) {
-  return <Plasma aria-hidden="true" className="liquid-window" radius={radius + 6} lean={false} fuse={false} formOut />;
+  // the window rounds at radius + 6 in liquid chrome; 6px further out, the surface rounds 6 more
+  return <Plasma aria-hidden="true" className="liquid-window" radius={radius + 12} lean={false} fuse={false} formOut />;
 }
 
 /**
@@ -167,14 +168,14 @@ export function LiquidMenus({ settings, mode }: { settings: os.Settings; mode: "
     return () => removeEventListener("lui-menu", on);
   }, []);
   return (
-    <PlasmaProvider canvas={false} ground="clear" background={background} theme={mode} radius={12} pointerDrop={false} quality={density()} maxSurfaces={6} {...AQUA} formSpeed={2}>
+    <PlasmaProvider canvas={false} ground="clear" background={background} theme={mode} radius={16} pointerDrop={false} quality={density()} maxSurfaces={6} {...AQUA} formSpeed={2}>
       <PlasmaCanvas zIndex={8990} className="liquid-canvas" />
       {menus.map(({ key, box }) => (
         <Plasma
           key={key}
           aria-hidden="true"
           className="liquid-plate"
-          radius={12}
+          radius={16}
           lean={false}
           fuse={false}
           formOut

@@ -97,10 +97,10 @@ const OLD_THEMES: Record<string, ThemeId> = {
 export const OWNER: User = { id: "owner", name: "Lupin", hue: 42, kind: "owner" };
 export const GUEST: User = { id: "guest", name: "Guest", hue: 200, kind: "guest" };
 
-export type Lang = "en" | "zh-Hans" | "zh-Hant";
+export type Lang = "en" | "zh-Hans" | "zh-Hant" | "vi";
 const guessLang = (): Lang => {
   const l = typeof navigator === "undefined" ? "en" : navigator.language;
-  return /^zh-(TW|HK|MO|Hant)/i.test(l) ? "zh-Hant" : /^zh/i.test(l) ? "zh-Hans" : "en";
+  return /^zh-(TW|HK|MO|Hant)/i.test(l) ? "zh-Hant" : /^zh/i.test(l) ? "zh-Hans" : /^vi/i.test(l) ? "vi" : "en";
 };
 
 export const defaultSettings = (): Settings => ({

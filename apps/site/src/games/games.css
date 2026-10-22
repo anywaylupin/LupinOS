@@ -271,68 +271,180 @@
   display: block;
 }
 
-/* the arcade launcher */
-.arcade-list {
-  padding: 4px 22px 22px;
-}
-.arcade-list h2 {
-  margin: 0 0 2px;
-  font-size: 20px;
-}
-.arcade-list header p {
-  margin: 0 0 16px;
-  font-size: 12px;
-}
-.arcade-grid {
+/* the arcade, as a game launcher: a featured banner, genre tabs, cover tiles, a coming-soon shelf.
+   Every cover takes its colour from its game's hue (--h). */
+.hub {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  gap: 14px;
+  padding: 6px 20px 22px;
 }
-.arcade-card {
+.hub-hero {
   display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 4px 12px;
-  padding: 14px;
-  border-radius: 14px 5px 14px 5px;
-  background: var(--lui-hover);
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, hsl(var(--h) 80% 60% / 0.35), transparent 60%),
+    linear-gradient(120deg, hsl(var(--h) 60% 45% / 0.22), hsl(calc(var(--h) + 40) 55% 40% / 0.12)),
+    var(--lui-hover);
   box-shadow: inset 0 0 0 0.5px var(--lui-sep);
-  transition: transform 0.25s var(--lui-spring), box-shadow 0.25s;
-  animation: rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: background 0.4s;
 }
-.arcade-card:hover {
-  transform: translateY(-2px);
-  box-shadow: inset 0 0 0 0.5px var(--lui-sep), 0 10px 24px -14px color-mix(in srgb, var(--lui-accent) 60%, transparent);
+.hub-art,
+.hub-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 20% 10%, hsl(var(--h) 85% 72%), transparent 60%),
+    linear-gradient(140deg, hsl(var(--h) 70% 55%), hsl(calc(var(--h) + 35) 60% 30%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 10px 22px -12px hsl(var(--h) 60% 25%);
 }
-.arcade-card svg {
-  width: 52px;
-  height: 52px;
-  padding: 6px;
-  border-radius: 12px 4px 12px 4px;
-  background: color-mix(in srgb, var(--lui-accent) 16%, transparent);
+.hub-art {
+  aspect-ratio: 1;
+  border-radius: 18px;
+}
+.hub-art svg,
+.hub-cover svg {
+  width: 52%;
   fill: none;
-  stroke: var(--lui-accent);
+  stroke: #fff;
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.25));
 }
-.arcade-card h3 {
-  margin: 0;
-  font-size: 14px;
+.hub-hero-text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
 }
-.arcade-card p {
-  margin: 2px 0 4px;
-  color: var(--lui-muted);
-  font-size: 12px;
-}
-.arcade-card small {
+.hub-kicker {
   font: 600 11px var(--lui-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lui-muted);
+}
+.hub-hero h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.1;
+}
+.hub-hero p {
+  margin: 0;
+  color: var(--lui-muted);
+  font-size: 13px;
+}
+.hub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.hub-best {
+  font: 600 12px var(--lui-font-mono);
   color: var(--lui-accent);
 }
-.arcade-actions {
-  grid-column: 2;
+.hub-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
+}
+.hub-tabs button {
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--lui-hover);
+  box-shadow: inset 0 0 0 0.5px var(--lui-sep);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+}
+.hub-tabs button[aria-selected="true"] {
+  background: var(--lui-accent);
+  color: #fff;
+  box-shadow: none;
+}
+.hub-h {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 -4px;
+  font-size: 15px;
+}
+.hub-h small {
+  font: 600 11px var(--lui-font-mono);
+  color: var(--lui-muted);
+}
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+  gap: 14px;
+}
+.hub-tile {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  animation: rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.03s);
+}
+.hub-cover {
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  margin-bottom: 4px;
+  transition: transform 0.25s var(--lui-spring), box-shadow 0.25s;
+}
+.hub-tile:not([data-soon]):hover .hub-cover {
+  transform: translateY(-3px) scale(1.02);
+}
+.hub-tile[aria-pressed="true"] .hub-cover {
+  box-shadow: 0 0 0 2px var(--lui-content), 0 0 0 4px var(--lui-accent), 0 12px 24px -12px hsl(var(--h) 60% 25%);
+}
+.hub-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 0.38);
+  color: #fff;
+  font: 700 10px var(--lui-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hub-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.hub-sub {
+  font-size: 11.5px;
+  color: var(--lui-muted);
+  line-height: 1.35;
+}
+/* not yet: the cover fades to grey, nothing lifts */
+.hub-tile[data-soon] .hub-cover {
+  filter: saturate(0.3) brightness(0.92);
+  opacity: 0.75;
+}
+@container (max-width: 460px) {
+  .hub-hero {
+    grid-template-columns: 1fr;
+  }
+  .hub-art {
+    width: 96px;
+  }
 }
 
 @supports (corner-shape: bevel) {
@@ -342,9 +454,7 @@
   .led,
   .mine-cell,
   .mines-grid,
-  .game-panel > div,
-  .arcade-card,
-  .arcade-card svg {
+  .game-panel > div {
     corner-shape: bevel round bevel round;
   }
 }
@@ -378,6 +488,8 @@
   padding: 10px;
   border-radius: 16px 6px 16px 6px;
   background: color-mix(in srgb, var(--lui-i2) 80%, #000);
+  /* a falling disc stays inside the tray: it enters at the top edge, never over the bar above */
+  overflow: hidden;
 }
 .c4-col {
   display: grid;
@@ -391,27 +503,35 @@
 .c4-col:not(:disabled):hover {
   background: rgb(255 255 255 / 0.08);
 }
+/* the slot is always drawn; a disc is a layer on top that falls into it, so the hole stays visible
+   until the disc arrives */
 .c4-col i {
+  position: relative;
   aspect-ratio: 1;
   border-radius: 50%;
   background: rgb(0 0 0 / 0.35);
   box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.4);
 }
-.c4-col i[data-v] {
-  animation: fall calc(0.08s * var(--fall) + 0.12s) cubic-bezier(0.5, 0, 0.75, 0) both;
+.c4-col i[data-v]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: c4-fall calc(0.08s * var(--fall) + 0.12s) cubic-bezier(0.5, 0, 0.75, 0) both;
 }
-.c4-col i[data-v="1"] {
+.c4-col i[data-v="1"]::after {
   background: var(--lui-accent);
 }
-.c4-col i[data-v="-1"] {
+.c4-col i[data-v="-1"]::after {
   background: #f2c14e;
 }
-.c4-col i[data-line] {
+.c4-col i[data-line]::after {
   box-shadow: 0 0 0 3px #fff, 0 0 14px #fff;
 }
-@keyframes fall {
+/* one slot plus its gap per row, so a disc starts just above the board and lands in its slot */
+@keyframes c4-fall {
   from {
-    translate: 0 calc(var(--fall) * -120%);
+    translate: 0 calc(var(--fall) * (-100% - 6px));
   }
 }
 .merge {

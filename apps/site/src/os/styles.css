@@ -719,9 +719,9 @@ body {
 .meltdown .icon,
 .meltdown .lui-window,
 .meltdown .lui-dock-item {
-  animation: fall 1.6s cubic-bezier(0.5, 0, 0.9, 0.6) both;
+  animation: meltdown-fall 1.6s cubic-bezier(0.5, 0, 0.9, 0.6) both;
 }
-@keyframes fall {
+@keyframes meltdown-fall {
   to {
     transform: translateY(120vh) rotate(25deg);
   }

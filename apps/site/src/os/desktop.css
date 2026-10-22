@@ -1302,6 +1302,19 @@
 .lui[data-chrome="liquid"] .lui-window,
 .lui[data-chrome="liquid"] .lui-window[data-focused] {
   box-shadow: none;
+  /* round like the liquid around it, no bevelled vertices */
+  corner-shape: round;
+  border-radius: calc(var(--lui-r-window) + 6px);
+}
+/* the glass feathers out at its edges, so its corners melt into the liquid rim. On the blurred
+   panes themselves: a mask on the window would make it a backdrop root and stop their blur. */
+.lui[data-chrome="liquid"] .lui-window-main,
+.lui[data-chrome="liquid"] .lui-window-sidebar,
+.lui[data-chrome="liquid"] .lui-menu {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6px, #000 calc(100% - 6px), transparent), linear-gradient(180deg, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 6px, #000 calc(100% - 6px), transparent), linear-gradient(180deg, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+  mask-composite: intersect;
 }
 .lui[data-chrome="liquid"] .lui-window::before,
 .lui[data-chrome="liquid"] .lui-window::after {
@@ -1313,6 +1326,8 @@
   backdrop-filter: blur(8px) saturate(120%);
 }
 .lui[data-chrome="liquid"] .lui-menu {
+  corner-shape: round;
+  border-radius: 16px;
   /* a thinner veil than glass menus, enough for the text over the liquid to read */
   background: color-mix(in srgb, var(--lui-menu) 70%, transparent);
   -webkit-backdrop-filter: none;

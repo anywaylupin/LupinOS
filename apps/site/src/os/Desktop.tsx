@@ -85,7 +85,8 @@ export function NotesList() {
 function NotificationCentre({ open, onClose, settings }: { open: boolean; onClose: () => void; settings: os.Settings }) {
   const t = useT();
   const now = useNow(30_000);
-  const zh = settings.lang !== "en";
+  // The lunar calendar follows China's time zone in Chinese, Vietnam's otherwise.
+  const zh = settings.lang.startsWith("zh");
   const tz = zh ? "Asia/Shanghai" : "Asia/Ho_Chi_Minh";
   const l = settings.lunar ? lunarDate(now, tz) : undefined;
   return (
@@ -407,11 +408,8 @@ function Icons({ sess }: { sess: os.Session }) {
   const projects = nodes.find((n) => n.id === "projects");
   let items: DeskItem[] = children(nodes, "desktop", false, sess.hiddenIds).map((n) => ({ id: n.id, name: n.name, icon: nodeIcon(n), node: n }));
   if (sort === "kind") items.sort((a, b) => a.icon.localeCompare(b.icon));
-  items = [
-    ...(projects && !sess.hiddenIds.includes("projects") ? [{ id: "projects", name: t("Projects"), icon: "folder", node: projects }] : []),
-    ...items,
-    { id: "trash", name: t("Trash"), icon: "trash", app: "trash" },
-  ];
+  // Files and folders only: the Trash and every app are in the dock.
+  items = [...(projects && !sess.hiddenIds.includes("projects") ? [{ id: "projects", name: t("Projects"), icon: "folder", node: projects }] : []), ...items];
 
   // The grid: columns from the right edge, rows from the top, above the dock.
   const px = ICON_PX[sess.settings.iconSize];

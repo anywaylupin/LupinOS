@@ -43,9 +43,8 @@ export const ownerNodes: VNode[] = [
   dir("root", "", null, { locked: true }),
   dir("desktop", "Desktop", "root"),
   f("about", "About.txt", "desktop", { open: "about" }),
+  // The desktop holds files only; apps live in the dock, so nothing shows twice.
   f("resume", "Resume.pdf", "desktop", { open: "resume" }),
-  f("contact", "Contact", "desktop", { open: "contact" }),
-  f("games", "Games", "desktop", { open: "games" }),
   dir("projects", "Projects", "root", { locked: true }),
   ...projects.map((p) => f(`p-${p.slug}`, p.slug, "projects", { open: "project", arg: p.slug })),
   dir(HOME, "Home", "root"),
