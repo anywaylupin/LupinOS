@@ -377,8 +377,9 @@ export function open(app: string, opts: { arg?: string; title?: string; from?: R
   const vw = innerWidth;
   const vh = innerHeight - 40 - 76; // top bar and dock
   const n = sess.windows.filter((w) => w.ws === sess.ws).length;
-  const w = Math.min(def.w, vw - 40);
-  const h = Math.min(def.h, vh - 16);
+  // Never below the app's minimum: a page still laying out (or hidden) can report a 0 viewport.
+  const w = Math.max(def.minW, Math.min(def.w, vw - 40));
+  const h = Math.max(def.minH, Math.min(def.h, vh - 16));
   const win: Win = {
     id: uid(),
     app,

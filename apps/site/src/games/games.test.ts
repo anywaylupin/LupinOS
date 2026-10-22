@@ -89,7 +89,8 @@ test("moves follow the rules and turn over the uncovered card", () => {
 
 import { c4, c4Empty, bestMove as aiMove, ttt, type Cells } from "./board.ts";
 import { dealFreeCell, fcBest, fcMove, maxRun } from "./cards.ts";
-import { canMove, move as mergeMove, slideLine } from "./merge.ts";
+import { canMove, move as mergeMove, slideLine, spawn } from "./merge.ts";
+import { newWorld, tick, type P as Pt, type Snake as SnakeT, type World } from "./snakes.ts";
 
 test("FreeCell deal 1 matches the classic layout", () => {
   const g = dealFreeCell(1);
@@ -137,4 +138,54 @@ test("merge slides, combines each pair once and knows when it is stuck", () => {
   assert.equal(r.grid[3], 4);
   assert.equal(r.moved, true);
   assert.equal(canMove([2, 4, 2, 4, 4, 2, 4, 2, 2, 4, 2, 4, 4, 2, 4, 2]), false);
+});
+
+test("doubled 2048 spawns eights and sixteens", () => {
+  const rand = mulberry32(3);
+  for (let i = 0; i < 20; i++) {
+    const g = spawn(Array(16).fill(0), rand, 8);
+    assert.ok(g.every((v) => v === 0 || v === 8 || v === 16));
+  }
+});
+
+const R: Pt = { x: 1, y: 0 };
+const L: Pt = { x: -1, y: 0 };
+const U: Pt = { x: 0, y: -1 };
+const sn = (cells: [number, number][], dir: Pt): SnakeT => ({ body: cells.map(([x, y]) => ({ x, y })), dir, grow: 0, alive: true, wait: 0 });
+const world = (...snakes: SnakeT[]): World => ({ snakes, food: [], score: 0, over: null });
+
+test("snake keeps one honey fewer than there are snakes", () => {
+  assert.equal(newWorld(1, mulberry32(1)).food.length, 1);
+  assert.equal(newWorld(2, mulberry32(1)).food.length, 2);
+  assert.equal(newWorld(2, mulberry32(1)).snakes.length, 3);
+});
+
+test("a head through a rival's body bites off everything behind the armour", () => {
+  const you = sn([[5, 5], [4, 5], [3, 5]], R);
+  const rival = sn([[6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6]], U);
+  const w = world(you, rival);
+  tick(w, [R, U], 100, mulberry32(1));
+  assert.equal(w.over, null);
+  assert.equal(rival.body.length, 5);
+  assert.equal(w.score, 1);
+  assert.equal(you.grow, 1);
+});
+
+test("running into armour or a rival's head ends the game", () => {
+  const armour = world(sn([[5, 5], [4, 5], [3, 5]], R), sn([[6, 4], [6, 5], [6, 6]], U));
+  tick(armour, [R, U], 100, mulberry32(1));
+  assert.equal(armour.over, "armour");
+  const head = world(sn([[5, 5], [4, 5], [3, 5]], R), sn([[7, 5], [8, 5], [9, 5]], L));
+  tick(head, [R, L], 100, mulberry32(1));
+  assert.equal(head.over, "head");
+});
+
+test("rivals that meet head on: the longer one lives", () => {
+  const long = sn([[10, 10], [11, 10], [12, 10], [13, 10]], L);
+  const short = sn([[8, 10], [7, 10], [6, 10]], R);
+  const w = world(sn([[2, 2], [1, 2], [0, 2]], R), long, short);
+  tick(w, [R, L, R], 100, mulberry32(1));
+  assert.equal(w.over, null);
+  assert.equal(long.alive, true);
+  assert.equal(short.alive, false);
 });

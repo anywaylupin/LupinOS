@@ -199,3 +199,13 @@
 {"tool":"Edit","request_id":"tu-1792663867790-va5c","signed":false,"note":"no signer configured"}
 {"tool":"Edit","request_id":"tu-1792663879415-trxo","signed":false,"note":"no signer configured"}
 {"tool":"mcp__ccd_turn__update_plan","request_id":"tu-1792663886885-4wzi","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792670736173-upux","signed":false,"note":"no signer configured"}
+{"tool":"Read","request_id":"tu-1792670742456-iu3a","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792670771295-510v","signed":false,"note":"no signer configured"}
+{"tool":"mcp__Claude_Browser__javascript_tool","request_id":"tu-1792670782486-k85j","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792670793201-tp51","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792670801835-umoj","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792670809181-q3aq","signed":false,"note":"no signer configured"}
+{"tool":"mcp__Claude_Browser__javascript_tool","request_id":"tu-1792670823908-8m1x","signed":false,"note":"no signer configured"}
+{"tool":"mcp__Claude_Browser__javascript_tool","request_id":"tu-1792670833038-tce6","signed":false,"note":"no signer configured"}
+{"tool":"Edit","request_id":"tu-1792670852274-mqip","signed":false,"note":"no signer configured"}

@@ -43,78 +43,166 @@ function Board({ game, keyName, mine }: { game: GameDef; keyName: string; mine?:
   );
 }
 
-/** Cover art: one line drawing per game, white on the game's own colour. */
+/** Cover art: a tiny still of each game being played, white on the game's own colour.
+ * Classes: f white, b pale tint, d see-through, k dark ink, h a hole, y the rival's yellow. */
+const sq = (x: number, y: number, size: number, cls: string) => <rect x={x} y={y} width={size} height={size} rx={1.6} className={cls} />;
+const label = (x: number, y: number, text: string, cls: string, size = 7) => (
+  <text x={x} y={y} className={cls} fontSize={size}>
+    {text}
+  </text>
+);
 const glyphs: Record<string, ReactNode> = {
   mines: (
     <>
-      <circle cx="24" cy="26" r="9" />
-      <path d="M24 11v6M24 35v6M9 26h6M33 26h6M13.5 15.5l4 4M30.5 32.5l4 4M13.5 36.5l4-4M30.5 19.5l4-4" />
+      {sq(4, 4, 12, "d")}
+      {label(10, 10.5, "1", "f")}
+      {sq(18, 4, 12, "d")}
+      {label(24, 10.5, "1", "f")}
+      {sq(32, 4, 12, "f")}
+      <path d="M36.5 14V7.5" className="ks" strokeWidth="1.4" />
+      <path d="M36.5 7.5l5 2.2-5 2.2z" className="k" />
+      {sq(4, 18, 12, "d")}
+      {sq(18, 18, 12, "d")}
+      {label(24, 24.5, "2", "f")}
+      {sq(32, 18, 12, "f")}
+      {sq(4, 32, 12, "d")}
+      {label(10, 38.5, "1", "f")}
+      {sq(18, 32, 12, "f")}
+      {sq(32, 32, 12, "d")}
+      <circle cx="38" cy="38" r="3" className="f" />
+      <path d="M38 33.5v9M33.5 38h9M34.8 34.8l6.4 6.4M41.2 34.8l-6.4 6.4" strokeWidth="1.4" />
     </>
   ),
   klondike: (
     <>
-      <path d="M12 14l14-4 6 22-14 4z" />
-      <path d="M22 12l14 2-3 24-14-2z" />
+      <rect x="5" y="12" width="11" height="16" rx="1.6" className="f" />
+      <path d="M10.5 17l2 3-2 3-2-3z" className="k" />
+      <rect x="18.5" y="10" width="11" height="16" rx="1.6" className="b" />
+      <rect x="18.5" y="17" width="11" height="16" rx="1.6" className="f" />
+      <path d="M24 22l2 3-2 3-2-3z" className="k" />
+      <rect x="32" y="8" width="11" height="16" rx="1.6" className="b" />
+      <rect x="32" y="14" width="11" height="16" rx="1.6" className="b" />
+      <rect x="32" y="21" width="11" height="16" rx="1.6" className="f" />
+      <path d="M37.5 26l2 3-2 3-2-3z" className="k" />
     </>
   ),
-  snake: <path d="M10 34h10a6 6 0 0 0 0-12h-4a6 6 0 0 1 0-12h18" />,
-  freecell: (
+  snake: (
     <>
-      <path d="M8 12h12v16H8zM28 12h12v16H28z" />
-      <path d="M14 34v4M34 34v4M10 40h28" />
-    </>
-  ),
-  merge: (
-    <>
-      <path d="M9 9h13v13H9zM26 9h13v13H26zM9 26h13v13H9z" />
-      <path d="M26 32h13M32.5 26v13" />
-    </>
-  ),
-  lights: (
-    <>
-      <circle cx="16" cy="16" r="5" />
-      <circle cx="32" cy="16" r="5" />
-      <circle cx="16" cy="32" r="5" />
-      <circle cx="32" cy="32" r="5" />
-    </>
-  ),
-  c4: (
-    <>
-      <path d="M8 10v30h32V10" />
-      <circle cx="16" cy="33" r="4" />
-      <circle cx="24" cy="33" r="4" />
-      <circle cx="32" cy="25" r="4" />
+      <path d="M40 6v11h-9" className="ds" strokeWidth="5" />
+      <path d="M7 40h13V27h13" strokeWidth="5" />
+      <circle cx="32" cy="27" r="1" className="k" />
+      <path d="M14 9.5l3 1.75v3.5L14 16.5l-3-1.75v-3.5z" className="f" />
     </>
   ),
   flappy: (
     <>
-      <ellipse cx="24" cy="27" rx="10" ry="8" />
-      <path d="M20 20c-2-6-8-8-10-4M28 20c2-6 8-8 10-4M22 20v14M27 20v14" />
+      <path d="M31 0h9v12h-9zM29 11h13v4H29zM31 33h9v15h-9zM29 30h13v4H29z" className="b" />
+      <circle cx="16" cy="23" r="6" className="f" />
+      <circle cx="18" cy="21.5" r="1.2" className="k" />
+      <path d="M21.5 23.5l4 1-4 1.5z" className="f" />
+      <path d="M11 25c2 2 5 2 6 0" className="ks" strokeWidth="1.4" />
+      <path d="M4 30h4M2 20h4" className="ds" strokeWidth="1.6" />
     </>
   ),
-  sudoku: <path d="M8 8h32v32H8zM18.7 8v32M29.3 8v32M8 18.7h32M8 29.3h32" />,
+  freecell: (
+    <>
+      <path d="M5 5h8v11H5zM15.5 5h8v11h-8zM25 5h8v11h-8zM35 5h8v11h-8z" strokeWidth="1.2" className="dl" />
+      <rect x="15.5" y="5" width="8" height="11" rx="1.2" className="f" />
+      <rect x="6" y="20" width="10" height="14" rx="1.4" className="fo" />
+      <rect x="6" y="26" width="10" height="14" rx="1.4" className="fo" />
+      <rect x="19" y="20" width="10" height="14" rx="1.4" className="fo" />
+      <rect x="19" y="25" width="10" height="14" rx="1.4" className="fo" />
+      <rect x="19" y="30" width="10" height="14" rx="1.4" className="fo" />
+      <rect x="32" y="20" width="10" height="14" rx="1.4" className="fo" />
+      <path d="M11 29.5l1.6 2.5-1.6 2.5-1.6-2.5zM24 33.5l1.6 2.5-1.6 2.5-1.6-2.5zM37 24.5l1.6 2.5-1.6 2.5-1.6-2.5z" className="k" />
+    </>
+  ),
+  merge: (
+    <>
+      {sq(4, 4, 18, "f")}
+      {label(13, 13.5, "2", "k", 10)}
+      {sq(26, 4, 18, "f")}
+      {label(35, 13.5, "4", "k", 10)}
+      {sq(4, 26, 18, "d")}
+      {sq(26, 26, 18, "k")}
+      {label(35, 35.5, "2048", "f", 6.4)}
+    </>
+  ),
+  lights: (
+    <>
+      {[0, 1, 2].flatMap((r) =>
+        [0, 1, 2].map((c) => {
+          const on = r === 1 || c === 1;
+          return <rect key={`${r}${c}`} x={4 + c * 14} y={4 + r * 14} width={12} height={12} rx={2.4} className={on ? "f glow" : "d"} />;
+        }),
+      )}
+    </>
+  ),
+  c4: (
+    <>
+      <rect x="5" y="12" width="38" height="31" rx="3" className="d" />
+      {[0, 1, 2].flatMap((r) =>
+        [0, 1, 2, 3].map((c) => {
+          const v = ["..wy", ".wy.", "wyww"][r][c];
+          return <circle key={`${r}${c}`} cx={12 + c * 8} cy={19 + r * 9} r={3.4} className={v === "w" ? "f" : v === "y" ? "y" : "h"} />;
+        }),
+      )}
+      <circle cx="12" cy="5.5" r="3.4" className="y" />
+    </>
+  ),
+  sudoku: (
+    <>
+      <path d="M6 6h36v36H6zM18 6v36M30 6v36M6 18h36M6 30h36" strokeWidth="1.6" />
+      {label(12, 12.5, "5", "f", 8)}
+      {label(36, 12.5, "3", "f", 8)}
+      {label(24, 24.5, "7", "f", 8)}
+      {label(12, 36.5, "9", "f", 8)}
+      {label(36, 36.5, "1", "f", 8)}
+    </>
+  ),
   mahjong: (
     <>
-      <path d="M10 14h14v20H10zM20 10h14v20H20z" />
-      <circle cx="27" cy="20" r="3" />
+      <rect x="6" y="20" width="12" height="16" rx="1.8" className="f" />
+      <rect x="18.5" y="20" width="12" height="16" rx="1.8" className="f" />
+      <rect x="31" y="20" width="12" height="16" rx="1.8" className="f" />
+      <rect x="12" y="12" width="12" height="16" rx="1.8" className="b" />
+      <rect x="25" y="12" width="12" height="16" rx="1.8" className="f" />
+      <circle cx="12" cy="31" r="2.4" className="k" />
+      <path d="M22.5 26v7M26.5 26v7" className="ks" strokeWidth="1.6" />
+      <circle cx="37" cy="31" r="2.4" className="k" />
+      <circle cx="31" cy="20" r="2.6" className="k" />
     </>
   ),
   breakout: (
     <>
-      <path d="M8 10h9v5H8zM19.5 10h9v5h-9zM31 10h9v5h-9zM13.5 18h9v5h-9zM25 18h9v5h-9z" />
-      <circle cx="26" cy="31" r="2.5" />
-      <path d="M16 40h16" />
+      <path d="M5 7h8.5v5H5zM15 7h8.5v5H15zM25 7h8.5v5H25zM35 7h8v5h-8zM10 14h8.5v5H10zM30 14h8.5v5H30z" className="f" />
+      <path d="M20 14h8.5v5H20z" className="d" />
+      <circle cx="27" cy="29" r="2.6" className="f" />
+      <path d="M17 41h14" strokeWidth="3.4" />
     </>
   ),
-  stack: <path d="M10 30h9v9h-9zM19 30h9v9h-9zM19 21h9v9h-9zM28 21h9v9h-9zM24 8h9v9h-9z" />,
+  stack: (
+    <>
+      <path d="M18 6h12v6H18zM24 12h6v6h-6z" className="f" />
+      <path d="M6 30h6v12H6zM12 36h18v6H12zM30 30h12v6H30zM36 36h6v6h-6zM12 30h6v6h-6z" className="b" />
+    </>
+  ),
   pinball: (
     <>
-      <circle cx="30" cy="14" r="4" />
-      <path d="M10 38l10-4M38 38l-10-4M12 8v18M36 8v18" />
-      <circle cx="18" cy="20" r="2.5" />
+      <circle cx="16" cy="14" r="4.5" className="d" />
+      <circle cx="16" cy="14" r="2" className="f" />
+      <circle cx="32" cy="18" r="4.5" className="d" />
+      <circle cx="32" cy="18" r="2" className="f" />
+      <circle cx="26" cy="30" r="2.6" className="f" />
+      <path d="M9 39l9 3M39 39l-9 3" strokeWidth="3.4" />
     </>
   ),
-  chess: <path d="M17 40h16M19 40l1-8h8l1 8M20 32c-4-4-3-10 1-14l-3-4 6-2c6 0 9 5 8 11l-2 3 1 6" />,
+  chess: (
+    <>
+      {[0, 1, 2, 3].flatMap((r) => [0, 1, 2, 3].map((c) => ((r + c) % 2 ? <rect key={`${r}${c}`} x={4 + c * 10} y={4 + r * 10} width={10} height={10} className="d" /> : null)))}
+      <path d="M20 37h8l-1-3c2-2 2-6 0-8l-1-1.5a2.6 2.6 0 1 0-4 0L21 26c-2 2-2 6 0 8z" className="fo" />
+    </>
+  ),
 };
 
 const bestLine = (g: GameDef, scores: Record<string, number>) => {

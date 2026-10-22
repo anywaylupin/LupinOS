@@ -40,12 +40,13 @@ export function move(g: Grid, dir: Dir): { grid: Grid; points: number; moved: bo
   return { grid, points, moved: grid.some((v, i) => v !== g[i]) };
 }
 
-/** Drops a 2 (or sometimes a 4) into a random empty cell. */
-export function spawn(g: Grid, rand: () => number = Math.random): Grid {
+/** Drops a `base` tile (or sometimes double that) into a random empty cell: 2 or 4 normally, 8 or
+ * 16 in doubled mode. */
+export function spawn(g: Grid, rand: () => number = Math.random, base = 2): Grid {
   const empty = g.flatMap((v, i) => (v ? [] : [i]));
   if (!empty.length) return g;
   const grid = [...g];
-  grid[empty[Math.floor(rand() * empty.length)]] = rand() < 0.9 ? 2 : 4;
+  grid[empty[Math.floor(rand() * empty.length)]] = rand() < 0.9 ? base : base * 2;
   return grid;
 }
 

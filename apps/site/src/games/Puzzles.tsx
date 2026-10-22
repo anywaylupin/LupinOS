@@ -1,25 +1,30 @@
-// Two small puzzles: Merge (slide and combine tiles) and Lights out (turn every light off).
+// Two small puzzles: 2048 (slide and combine tiles) and Lights out (turn every light off).
 // Turn based, so plain page elements with keyboard support.
-import { Button } from "@lupinos/ui";
+import { Button, Segmented } from "@lupinos/ui";
 import { type CSSProperties, useEffect, useState } from "react";
 import { useKeys } from "./canvas";
 import { canMove, type Dir, type Grid, move, spawn } from "./merge";
 import { bestOf, finish, GameBar, type GameProps, Panel } from "./Shell";
 
-// ---- Merge -------------------------------------------------------------------------------------
+// ---- 2048 --------------------------------------------------------------------------------------
 
 const KEYS: Record<string, Dir> = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down", KeyA: "left", KeyD: "right", KeyW: "up", KeyS: "down" };
-const freshGrid = () => spawn(spawn(Array(16).fill(0)));
+/** Classic spawns 2s and 4s; doubled spawns 8s and 16s and aims four times higher. */
+type Mode = "classic" | "double";
+const BASE: Record<Mode, number> = { classic: 2, double: 8 };
+const freshGrid = (mode: Mode) => spawn(spawn(Array(16).fill(0), Math.random, BASE[mode]), Math.random, BASE[mode]);
 
 export function Merge({ focused }: GameProps) {
-  const [grid, setGrid] = useState<Grid>(freshGrid);
+  const [mode, setMode] = useState<Mode>("classic");
+  const [grid, setGrid] = useState<Grid>(() => freshGrid("classic"));
   const [score, setScore] = useState(0);
   const over = !canMove(grid);
+  const key = mode === "classic" ? "merge" : "merge-double";
   const go = (d: Dir) => {
     if (over) return;
     const r = move(grid, d);
     if (!r.moved) return;
-    setGrid(spawn(r.grid));
+    setGrid(spawn(r.grid, Math.random, BASE[mode]));
     setScore((s) => s + r.points);
   };
   useKeys(focused, (e) => {
@@ -29,17 +34,26 @@ export function Merge({ focused }: GameProps) {
     }
   });
   useEffect(() => {
-    if (over) finish("merge", score, { won: grid.some((v) => v >= 2048) });
+    if (over) finish(key, score, { won: grid.some((v) => v >= 1024 * BASE[mode]) });
     // biome-ignore lint/correctness/useExhaustiveDependencies: once per game over
   }, [over]);
   const [touch, setTouch] = useState<{ x: number; y: number } | null>(null);
-  const restart = () => (setGrid(freshGrid()), setScore(0));
+  const restart = (m = mode) => (setGrid(freshGrid(m)), setScore(0));
   return (
     <div className="game puzzle">
       <GameBar>
         <span className="led">{score}</span>
-        <span className="muted">Best {bestOf("merge") ?? 0}</span>
-        <Button onClick={restart}>New game</Button>
+        <span className="muted">Best {bestOf(key) ?? 0}</span>
+        <Segmented
+          label="Mode"
+          value={mode}
+          onChange={(m) => (setMode(m), restart(m))}
+          options={[
+            { value: "classic", label: "Classic" },
+            { value: "double", label: "Doubled" },
+          ]}
+        />
+        <Button onClick={() => restart()}>New game</Button>
       </GameBar>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: swipes for touch screens; arrows work too */}
       <div
@@ -54,10 +68,10 @@ export function Merge({ focused }: GameProps) {
           go(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up");
         }}
       >
-        <div className="merge" role="grid" aria-label={`Merge board, score ${score}`}>
+        <div className="merge" role="grid" aria-label={`2048 board, score ${score}`}>
           {grid.map((v, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: sixteen fixed cells
-            <div key={i} role="gridcell" className="merge-cell" data-v={v || undefined} style={{ "--t": Math.log2(v || 1) } as CSSProperties}>
+            <div key={i} role="gridcell" className="merge-cell" data-v={v || undefined} data-hot={v >= 128 || undefined} data-long={v >= 1000 || undefined} style={{ "--t": Math.log2(v || 1) } as CSSProperties}>
               {v || ""}
             </div>
           ))}
@@ -65,7 +79,7 @@ export function Merge({ focused }: GameProps) {
         {over && (
           <Panel title={`Score ${score}`}>
             <p>No moves left. The tiles have unionised.</p>
-            <Button variant="primary" onClick={restart}>
+            <Button variant="primary" onClick={() => restart()}>
               Again
             </Button>
           </Panel>

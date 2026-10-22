@@ -47,7 +47,7 @@ export function Segmented<T extends string>({
   return (
     <div className="lui-segmented" role="group" aria-label={label}>
       {options.map((o) => (
-        <button key={o.value} type="button" aria-pressed={o.value === value} title={o.title} aria-label={o.title} onClick={() => onChange(o.value)}>
+        <button key={o.value} type="button" aria-pressed={o.value === value} title={o.title} aria-label={o.title} onClick={() => o.value !== value && onChange(o.value)}>
           {o.label}
         </button>
       ))}

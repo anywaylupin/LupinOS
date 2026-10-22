@@ -119,3 +119,7 @@
 {"tool":"Bash","request_id":"tu-1792664432511-biax","signed":false,"note":"no signer configured"}
 {"tool":"mcp__ccd_turn__update_plan","request_id":"tu-1792664448877-imzo","signed":false,"note":"no signer configured"}
 {"tool":"Bash","request_id":"tu-1792664450509-ojg6","signed":false,"note":"no signer configured"}
+{"tool":"Bash","request_id":"tu-1792664603436-uvmv","signed":false,"note":"no signer configured"}
+{"tool":"Edit","request_id":"tu-1792664627878-rqj0","signed":false,"note":"no signer configured"}
+{"tool":"Edit","request_id":"tu-1792664634446-dt08","signed":false,"note":"no signer configured"}
+{"tool":"mcp__ccd_turn__update_plan","request_id":"tu-1792664701363-09d2","signed":false,"note":"no signer configured"}
